@@ -1,0 +1,90 @@
+CROSS_COMPILE ?= arm-none-eabi-
+
+CC      := $(CROSS_COMPILE)gcc
+LD      := $(CROSS_COMPILE)ld
+OBJCOPY := $(CROSS_COMPILE)objcopy
+
+SDK_SRCS := \
+	SDK/Drivers/CMSIS/Device/ST/STM32L4xx/Source/Templates/gcc/startup_stm32l433xx.s \
+	SDK/Drivers/CMSIS/Device/ST/STM32L4xx/Source/Templates/system_stm32l4xx.c
+
+SDK_INCLUDES := \
+	SDK/Drivers/CMSIS/Device/ST/STM32L4xx/Include \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Inc \
+	SDK/Drivers/CMSIS/Include
+
+APP_SRCS := \
+	app/main.c
+
+APP_INCLUDES := \
+	app/config
+
+SRCS     := $(SDK_SRCS) $(APP_SRCS)
+INCLUDES := $(SDK_INCLUDES) $(APP_INCLUDES)
+
+DEFS     := USE_HAL_DRIVER STM32L433xx
+LDSCRIPT := scripts/ld/STM32L433CCUx_FLASH.ld
+
+CFLAGS   := \
+	-Wall -Wextra -std=c99 -Os -g \
+	-mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard \
+	-ffunction-sections -fdata-sections -fomit-frame-pointer \
+	$(addprefix -D, $(DEFS)) \
+	$(addprefix -I, $(INCLUDES))
+
+LDFLAGS  := -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard -T$(LDSCRIPT)
+
+LIBS     := -Wl,--gc-sections --specs=nano.specs -lc -lnosys
+
+OBJS     := $(patsubst %.c,out/obj/%.o, $(filter %.c, $(SRCS))) $(patsubst %.s,out/obj/%.o, $(filter %.s, $(SRCS)))
+DEPS     := $(patsubst %.o,%.d,$(OBJS))
+
+all: out/app.bin
+.PHONY: all
+
+out/obj/%.o: %.s
+	@echo "CC $<"
+	@mkdir -p $(dir $@)
+	@$(CC) -MM -MF $(subst .o,.d,$@) -MP -MT "$@ $(subst .o,.d,$@)" $(CFLAGS) $<
+	@$(CC) $(CFLAGS) -c -o $@ $<
+
+out/obj/%.o: %.c
+	@echo "CC $<"
+	@mkdir -p $(dir $@)
+	@$(CC) -MM -MF $(subst .o,.d,$@) -MP -MT "$@ $(subst .o,.d,$@)" $(CFLAGS) $<
+	@$(CC) $(CFLAGS) -c -o $@ $<
+
+out/app.elf: $(OBJS)
+	@echo "LD $@"
+	@$(CC) $(CFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) -Xlinker -Map=$@.map
+
+%.bin: %.elf
+	@$(OBJCOPY) -O binary $< $@
+
+clean:
+	@echo "Cleaning"
+	@rm -rf out/
+.PHONY: clean
+
+stlink:
+	@openocd \
+	-f interface/stlink-v2.cfg \
+	-c "transport select hla_swd" \
+	-f target/stm32l4x.cfg \
+	-c "init ; reset halt"
+.PHONY: stlink
+
+daplink:
+	@openocd \
+	-f interface/cmsis-dap.cfg \
+	-f target/stm32l4x.cfg \
+	-c "init ; reset halt"
+.PHONY: daplink
+
+flash: out/app.bin
+	@echo -e "flash banks\nreset halt\nprogram $< verify\nreset run\nexit\n" | nc localhost 4444
+.PHONY: flash
+
+ifneq ("$(MAKECMDGOALS)","clean")
+-include $(DEPS)
+endif
