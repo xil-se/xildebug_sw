@@ -8,6 +8,7 @@ SDK_SRCS := \
 	SDK/Drivers/CMSIS/Device/ST/STM32L4xx/Source/Templates/gcc/startup_stm32l433xx.s \
 	SDK/Drivers/CMSIS/Device/ST/STM32L4xx/Source/Templates/system_stm32l4xx.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c \
@@ -33,6 +34,7 @@ SDK_INCLUDES := \
 APP_SRCS := \
 	app/drivers/gpio.c \
 	app/drivers/uart.c \
+	app/drivers/adc.c \
 	app/drivers/i2c.c \
 	app/freertos.c \
 	app/main.c

@@ -35,8 +35,9 @@
 
 #define USE_SPI_CRC					0
 
-#include "stm32l4xx_hal_cortex.h"
 #include "stm32l4xx_hal_dma.h"
+#include "stm32l4xx_hal_adc.h"
+#include "stm32l4xx_hal_cortex.h"
 #include "stm32l4xx_hal_flash.h"
 #include "stm32l4xx_hal_gpio.h"
 #include "stm32l4xx_hal_i2c.h"
