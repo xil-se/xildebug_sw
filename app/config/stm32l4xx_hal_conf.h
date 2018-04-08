@@ -44,6 +44,7 @@
 #include "stm32l4xx_hal_pwr.h"
 #include "stm32l4xx_hal_rcc.h"
 #include "stm32l4xx_hal_tim.h"
+#include "stm32l4xx_hal_uart.h"
 
 #ifdef  USE_FULL_ASSERT
 	#define assert_param(expr) ((expr) ? (void)0U : assert_failed((uint8_t *)__FILE__, __LINE__))

@@ -4,6 +4,7 @@
 #include "task.h"
 
 #include "drivers/gpio.h"
+#include "drivers/uart.h"
 #include "drivers/i2c.h"
 
 #define MAIN_TASK_STACK_SIZE	512
@@ -81,6 +82,8 @@ HAL_StatusTypeDef SystemClock_Config(void)
 
 void main_task(void *p_arg)
 {
+	HAL_UART_Transmit(uart_get_handle(), (uint8_t*)"Hello World", 11, HAL_MAX_DELAY);
+
 	while (1) {
 
 	}
@@ -101,6 +104,10 @@ int main(void)
 	gpio_init();
 
 	status = i2c_init();
+	if (status != HAL_OK)
+		while (1) ;
+
+	status = uart_init();
 	if (status != HAL_OK)
 		while (1) ;
 

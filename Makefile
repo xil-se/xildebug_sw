@@ -15,6 +15,7 @@ SDK_SRCS := \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/list.c \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
@@ -31,6 +32,7 @@ SDK_INCLUDES := \
 
 APP_SRCS := \
 	app/drivers/gpio.c \
+	app/drivers/uart.c \
 	app/drivers/i2c.c \
 	app/freertos.c \
 	app/main.c
