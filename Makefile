@@ -10,6 +10,8 @@ SDK_SRCS := \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c \
@@ -29,11 +31,13 @@ SDK_INCLUDES := \
 
 APP_SRCS := \
 	app/drivers/gpio.c \
+	app/drivers/i2c.c \
 	app/freertos.c \
 	app/main.c
 
 APP_INCLUDES := \
-	app/config
+	app/config \
+	app
 
 SRCS     := $(SDK_SRCS) $(APP_SRCS)
 INCLUDES := $(SDK_INCLUDES) $(APP_INCLUDES)

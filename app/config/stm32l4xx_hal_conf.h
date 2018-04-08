@@ -39,6 +39,7 @@
 #include "stm32l4xx_hal_dma.h"
 #include "stm32l4xx_hal_flash.h"
 #include "stm32l4xx_hal_gpio.h"
+#include "stm32l4xx_hal_i2c.h"
 #include "stm32l4xx_hal_pwr_ex.h"
 #include "stm32l4xx_hal_pwr.h"
 #include "stm32l4xx_hal_rcc.h"

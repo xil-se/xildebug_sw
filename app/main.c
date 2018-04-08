@@ -4,6 +4,7 @@
 #include "task.h"
 
 #include "drivers/gpio.h"
+#include "drivers/i2c.h"
 
 #define MAIN_TASK_STACK_SIZE	512
 #define MAIN_TASK_NAME			"Main"
@@ -98,6 +99,10 @@ int main(void)
 		while (1) ;
 
 	gpio_init();
+
+	status = i2c_init();
+	if (status != HAL_OK)
+		while (1) ;
 
 	main_task_handle = xTaskCreateStatic(
 		main_task,
