@@ -5,15 +5,29 @@ LD      := $(CROSS_COMPILE)ld
 OBJCOPY := $(CROSS_COMPILE)objcopy
 
 SDK_SRCS := \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c \
 	SDK/Drivers/CMSIS/Device/ST/STM32L4xx/Source/Templates/gcc/startup_stm32l433xx.s \
-	SDK/Drivers/CMSIS/Device/ST/STM32L4xx/Source/Templates/system_stm32l4xx.c
+	SDK/Drivers/CMSIS/Device/ST/STM32L4xx/Source/Templates/system_stm32l4xx.c \
+	SDK/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c \
+	SDK/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
+	SDK/Middlewares/Third_Party/FreeRTOS/Source/list.c \
+	SDK/Middlewares/Third_Party/FreeRTOS/Source/tasks.c \
+	SDK/Middlewares/Third_Party/FreeRTOS/Source/timers.c \
+	SDK/Middlewares/Third_Party/FreeRTOS/Source/queue.c
 
 SDK_INCLUDES := \
 	SDK/Drivers/CMSIS/Device/ST/STM32L4xx/Include \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Inc \
-	SDK/Drivers/CMSIS/Include
+	SDK/Drivers/CMSIS/Include \
+	SDK/Middlewares/Third_Party/FreeRTOS/Source/include \
+	SDK/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
 
 APP_SRCS := \
+	app/freertos.c \
 	app/main.c
 
 APP_INCLUDES := \

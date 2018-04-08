@@ -1,1 +1,5 @@
 out/
+*.config
+*.creator*
+*.files
+*.includes
