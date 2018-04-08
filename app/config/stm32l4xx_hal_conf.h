@@ -35,12 +35,14 @@
 
 #define USE_SPI_CRC					0
 
-#include "stm32l4xx_hal_rcc.h"
 #include "stm32l4xx_hal_cortex.h"
-#include "stm32l4xx_hal_gpio.h"
+#include "stm32l4xx_hal_dma.h"
 #include "stm32l4xx_hal_flash.h"
+#include "stm32l4xx_hal_gpio.h"
 #include "stm32l4xx_hal_pwr_ex.h"
 #include "stm32l4xx_hal_pwr.h"
+#include "stm32l4xx_hal_rcc.h"
+#include "stm32l4xx_hal_tim.h"
 
 #ifdef  USE_FULL_ASSERT
 	#define assert_param(expr) ((expr) ? (void)0U : assert_failed((uint8_t *)__FILE__, __LINE__))

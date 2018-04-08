@@ -5,28 +5,30 @@ LD      := $(CROSS_COMPILE)ld
 OBJCOPY := $(CROSS_COMPILE)objcopy
 
 SDK_SRCS := \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c \
 	SDK/Drivers/CMSIS/Device/ST/STM32L4xx/Source/Templates/gcc/startup_stm32l433xx.s \
 	SDK/Drivers/CMSIS/Device/ST/STM32L4xx/Source/Templates/system_stm32l4xx.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c \
-	SDK/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/list.c \
+	SDK/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
+	SDK/Middlewares/Third_Party/FreeRTOS/Source/queue.c \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/tasks.c \
-	SDK/Middlewares/Third_Party/FreeRTOS/Source/timers.c \
-	SDK/Middlewares/Third_Party/FreeRTOS/Source/queue.c
+	SDK/Middlewares/Third_Party/FreeRTOS/Source/timers.c
 
 SDK_INCLUDES := \
 	SDK/Drivers/CMSIS/Device/ST/STM32L4xx/Include \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Inc \
 	SDK/Drivers/CMSIS/Include \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Inc \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/include \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
 
 APP_SRCS := \
+	app/drivers/gpio.c \
 	app/freertos.c \
 	app/main.c
 
@@ -40,7 +42,7 @@ DEFS     := USE_HAL_DRIVER STM32L433xx
 LDSCRIPT := scripts/ld/STM32L433CCUx_FLASH.ld
 
 CFLAGS   := \
-	-Wall -Wextra -std=c99 -Os -g \
+	-Wall -Wextra -Wno-unused-parameter -std=c99 -Os -g \
 	-mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard \
 	-ffunction-sections -fdata-sections -fomit-frame-pointer \
 	$(addprefix -D, $(DEFS)) \

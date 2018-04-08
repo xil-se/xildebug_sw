@@ -3,6 +3,8 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+#include "drivers/gpio.h"
+
 #define MAIN_TASK_STACK_SIZE	512
 #define MAIN_TASK_NAME			"Main"
 #define MAIN_TASK_PRIORITY		1
@@ -94,6 +96,8 @@ int main(void)
 	status = SystemClock_Config();
 	if (status != HAL_OK)
 		while (1) ;
+
+	gpio_init();
 
 	main_task_handle = xTaskCreateStatic(
 		main_task,
