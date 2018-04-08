@@ -3,6 +3,14 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+#define MAIN_TASK_STACK_SIZE	512
+#define MAIN_TASK_NAME			"Main"
+#define MAIN_TASK_PRIORITY		1
+
+StackType_t main_task_stack[MAIN_TASK_STACK_SIZE];
+TaskHandle_t main_task_handle;
+StaticTask_t main_task_tcb;
+
 HAL_StatusTypeDef SystemClock_Config(void)
 {
 	HAL_StatusTypeDef status;
@@ -68,6 +76,13 @@ HAL_StatusTypeDef SystemClock_Config(void)
 	return status;
 }
 
+void main_task(void *p_arg)
+{
+	while (1) {
+
+	}
+}
+
 int main(void)
 {
 	HAL_StatusTypeDef status;
@@ -78,6 +93,18 @@ int main(void)
 
 	status = SystemClock_Config();
 	if (status != HAL_OK)
+		while (1) ;
+
+	main_task_handle = xTaskCreateStatic(
+		main_task,
+		MAIN_TASK_NAME,
+		MAIN_TASK_STACK_SIZE,
+		NULL,
+		MAIN_TASK_PRIORITY,
+		&main_task_stack[0],
+		&main_task_tcb);
+
+	if (main_task_handle == NULL)
 		while (1) ;
 
 	vTaskStartScheduler();
