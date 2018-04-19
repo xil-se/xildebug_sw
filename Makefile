@@ -105,7 +105,7 @@ daplink:
 	-c "init ; reset halt"
 .PHONY: daplink
 
-flash: out/app.bin
+flash: out/app.elf
 	@echo -e "flash banks\nreset halt\nprogram $< verify\nreset run\nexit\n" | nc localhost 4444
 .PHONY: flash
 
