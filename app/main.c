@@ -7,6 +7,7 @@
 #include "drivers/uart.h"
 #include "drivers/i2c.h"
 #include "drivers/adc.h"
+#include "drivers/led.h"
 
 #define MAIN_TASK_STACK_SIZE	512
 #define MAIN_TASK_NAME			"Main"
@@ -83,10 +84,13 @@ HAL_StatusTypeDef SystemClock_Config(void)
 
 void main_task(void *p_arg)
 {
+	int i = 0;
+
 	HAL_UART_Transmit(uart_get_handle(), (uint8_t*)"Hello World", 11, HAL_MAX_DELAY);
 
 	while (1) {
-
+		led_rgb_set(i % 8);
+		vTaskDelay(pdMS_TO_TICKS(250));
 	}
 }
 
