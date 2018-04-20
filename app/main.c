@@ -22,13 +22,13 @@ HAL_StatusTypeDef SystemClock_Config(void)
 	HAL_StatusTypeDef status;
 
 	RCC_OscInitTypeDef RCC_OscInitStruct = {
-		.OscillatorType = RCC_OSCILLATORTYPE_MSI,
-		.MSIState = RCC_MSI_ON,
-		.MSICalibrationValue = 0,
-		.MSIClockRange = RCC_MSIRANGE_6,
+		.OscillatorType = RCC_OSCILLATORTYPE_HSI48 | RCC_OSCILLATORTYPE_HSI,
+		.HSIState = RCC_HSI_ON,
+		.HSI48State = RCC_HSI48_ON,
+		.HSICalibrationValue = 16,
 		.PLL.PLLState = RCC_PLL_ON,
-		.PLL.PLLSource = RCC_PLLSOURCE_MSI,
-		.PLL.PLLN = 40,
+		.PLL.PLLSource = RCC_PLLSOURCE_HSI,
+		.PLL.PLLN = 10,
 		.PLL.PLLP = RCC_PLLP_DIV7,
 		.PLL.PLLQ = RCC_PLLQ_DIV2,
 		.PLL.PLLR = RCC_PLLR_DIV2,
@@ -54,15 +54,8 @@ HAL_StatusTypeDef SystemClock_Config(void)
 		.PeriphClockSelection = RCC_PERIPHCLK_USART3 | RCC_PERIPHCLK_I2C1 | RCC_PERIPHCLK_USB | RCC_PERIPHCLK_ADC,
 		.Usart3ClockSelection = RCC_USART3CLKSOURCE_PCLK1,
 		.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1,
-		.AdcClockSelection = RCC_ADCCLKSOURCE_PLLSAI1,
-		.UsbClockSelection = RCC_USBCLKSOURCE_PLLSAI1,
-		.PLLSAI1.PLLSAI1Source = RCC_PLLSOURCE_MSI,
-		.PLLSAI1.PLLSAI1M = 1,
-		.PLLSAI1.PLLSAI1N = 24,
-		.PLLSAI1.PLLSAI1P = RCC_PLLP_DIV7,
-		.PLLSAI1.PLLSAI1Q = RCC_PLLQ_DIV2,
-		.PLLSAI1.PLLSAI1R = RCC_PLLR_DIV2,
-		.PLLSAI1.PLLSAI1ClockOut = RCC_PLLSAI1_48M2CLK | RCC_PLLSAI1_ADC1CLK,
+		.AdcClockSelection = RCC_ADCCLKSOURCE_SYSCLK,
+		.UsbClockSelection = RCC_USBCLKSOURCE_HSI48,
 	};
 
 	status = HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
