@@ -89,7 +89,9 @@ void main_task(void *p_arg)
 	HAL_UART_Transmit(uart_get_handle(), (uint8_t*)"Hello World", 11, HAL_MAX_DELAY);
 
 	while (1) {
+		i++;
 		led_rgb_set(i % 8);
+		led_tx_set(i % 2);
 		vTaskDelay(pdMS_TO_TICKS(250));
 	}
 }
