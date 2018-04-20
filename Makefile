@@ -7,16 +7,18 @@ OBJCOPY := $(CROSS_COMPILE)objcopy
 SDK_SRCS := \
 	SDK/Drivers/CMSIS/Device/ST/STM32L4xx/Source/Templates/gcc/startup_stm32l433xx.s \
 	SDK/Drivers/CMSIS/Device/ST/STM32L4xx/Source/Templates/system_stm32l4xx.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/list.c \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
@@ -38,7 +40,8 @@ APP_SRCS := \
 	app/drivers/led.c \
 	app/drivers/uart.c \
 	app/freertos.c \
-	app/main.c
+	app/main.c \
+	app/stm32l4_hal.c
 
 APP_INCLUDES := \
 	app/config \
