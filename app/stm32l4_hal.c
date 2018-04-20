@@ -3,6 +3,7 @@
 #include "task.h"
 
 static TIM_HandleTypeDef tim_handle;
+extern void xPortSysTickHandler(void);
 
 HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
 {
@@ -36,7 +37,7 @@ HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
 	if (status != HAL_OK)
 		return status;
 
-	status = HAL_TIM_Base_Start_IT(&tim_handle);\
+	status = HAL_TIM_Base_Start_IT(&tim_handle);
 	if (status != HAL_OK)
 		return status;
 
