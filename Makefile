@@ -32,10 +32,11 @@ SDK_INCLUDES := \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
 
 APP_SRCS := \
-	app/drivers/gpio.c \
-	app/drivers/uart.c \
 	app/drivers/adc.c \
+	app/drivers/gpio.c \
 	app/drivers/i2c.c \
+	app/drivers/led.c \
+	app/drivers/uart.c \
 	app/freertos.c \
 	app/main.c
 
@@ -105,7 +106,7 @@ daplink:
 	-c "init ; reset halt"
 .PHONY: daplink
 
-flash: out/app.bin
+flash: out/app.elf
 	@echo -e "flash banks\nreset halt\nprogram $< verify\nreset run\nexit\n" | nc localhost 4444
 .PHONY: flash
 

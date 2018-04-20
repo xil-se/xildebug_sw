@@ -48,4 +48,7 @@
 #define LED_RGB_G_Pin GPIO_PIN_8
 #define LED_RGB_G_GPIO_Port GPIOA
 
+#define LED_RGB_R_Pin GPIO_PIN_15
+#define LED_RGB_R_GPIO_Port GPIOA
+
 void gpio_init(void);
