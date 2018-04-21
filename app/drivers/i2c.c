@@ -57,3 +57,12 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef *p_handle)
 	}
 }
 
+HAL_StatusTypeDef i2c_master_tx(uint16_t dev_address, uint8_t *p_data, uint16_t size, uint32_t timeout_ms)
+{
+	return HAL_I2C_Master_Transmit(&i2c_handle, dev_address, p_data, size, timeout_ms);
+}
+
+HAL_StatusTypeDef i2c_master_rx(uint16_t dev_address, uint8_t *p_data, uint16_t size, uint32_t timeout_ms)
+{
+	return HAL_I2C_Master_Receive(&i2c_handle, dev_address, p_data, size, timeout_ms);
+}
