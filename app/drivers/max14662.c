@@ -34,7 +34,7 @@ HAL_StatusTypeDef max14662_set_value(enum MAX14662_address address, uint8_t val)
 {
 	HAL_StatusTypeDef status;
 	uint8_t i2c_address;
-	const uint8_t data[2] = {
+	uint8_t data[2] = {
 		MAX14662_REG_ADDR,
 		val
 	};
