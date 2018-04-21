@@ -16,7 +16,8 @@
 
 static uint8_t max14662_state[NUM_OF_MAX14662_ADDRESSES];
 
-static uint8_t resolve_address(enum MAX14662_address address) {
+static uint8_t resolve_address(enum MAX14662_address address)
+{
 	switch (address) {
 	default:
 	case MAX14662_AD_0_0:
