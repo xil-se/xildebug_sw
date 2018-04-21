@@ -80,7 +80,7 @@ HAL_StatusTypeDef max14662_get_value(enum MAX14662_address address, uint8_t *p_v
 	HAL_StatusTypeDef status;
 	const uint8_t i2c_address = resolve_address(address);
 
-	status = i2c_master_rx(i2c_address << 1, p_val, sizeof(p_val[0]), I2C_TIMEOUT);
+	status = i2c_master_rx(i2c_address << 1, p_val, sizeof(*p_val), I2C_TIMEOUT);
 	if (status != HAL_OK)
 		return status;
 	
