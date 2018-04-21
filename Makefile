@@ -38,6 +38,7 @@ APP_SRCS := \
 	app/drivers/gpio.c \
 	app/drivers/i2c.c \
 	app/drivers/led.c \
+	app/drivers/mcp4018t.c \
 	app/drivers/uart.c \
 	app/freertos.c \
 	app/main.c \
