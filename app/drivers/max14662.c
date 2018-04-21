@@ -52,6 +52,23 @@ HAL_StatusTypeDef max14662_set_value(enum MAX14662_address address, uint8_t val)
 	return status;
 }
 
+HAL_StatusTypeDef max14662_set_bit(enum MAX14662_address address, uint8_t bit, bool value)
+{
+	const uint8_t current_value = max14662_state[address];
+	const bool masked_bit = !!(current_value & (1 << bit));
+	uint8_t new_value;
+
+	if (masked_bit == value)
+		return HAL_OK;
+
+	if (value)
+		new_value = max14662_state[address] | (1 << bit);
+	else
+		new_value = max14662_state[address] & (~(1 << bit));
+	
+	return max14662_set_value(address, new_value);
+}
+
 uint8_t max14662_get_value_cached(enum MAX14662_address address)
 {
 	return max14662_state[address];
