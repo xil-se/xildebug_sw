@@ -54,6 +54,13 @@ void HAL_ResumeTick(void)
 	__HAL_TIM_ENABLE_IT(&tim_handle, TIM_IT_UPDATE);
 }
 
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	if (htim->Instance == TIM1) {
+		HAL_IncTick();
+	}
+}
+
 void HAL_MspInit(void)
 {
 	__HAL_RCC_SYSCFG_CLK_ENABLE();
