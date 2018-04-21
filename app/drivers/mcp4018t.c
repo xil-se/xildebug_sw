@@ -6,5 +6,5 @@
 
 HAL_StatusTypeDef mcp4018t_set_value(uint8_t val)
 {
-	return i2c_master_tx(MCP4018T_ADDRESS << 1, &val, 1, I2C_TIMEOUT);
+	return i2c_master_tx(MCP4018T_ADDRESS << 1, &val, sizeof(val), I2C_TIMEOUT);
 }
