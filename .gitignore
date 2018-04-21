@@ -1,5 +1,7 @@
-out/
+.gdb_history
+.vscode
 *.config
 *.creator*
 *.files
 *.includes
+out/
