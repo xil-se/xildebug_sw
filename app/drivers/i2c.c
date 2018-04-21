@@ -1,7 +1,10 @@
+#include <stdbool.h>
+
 #include "drivers/gpio.h"
 #include "drivers/i2c.h"
 
-I2C_HandleTypeDef i2c_handle;
+static I2C_HandleTypeDef i2c_handle;
+static bool m_initialized;
 
 err_t i2c_init(void)
 {
@@ -25,6 +28,8 @@ err_t i2c_init(void)
 
 	status = HAL_I2CEx_ConfigDigitalFilter(&i2c_handle, 0);
 	HAL_ERR_CHECK(status, EI2C_HAL_CONFIG_DIGITAL_FILTER);
+
+	m_initialized = true;
 
 	return ERR_OK;
 }
@@ -58,6 +63,9 @@ err_t i2c_master_tx(uint16_t dev_address, uint8_t *p_data, uint16_t size, uint32
 {
 	HAL_StatusTypeDef status;
 
+	if (!m_initialized)
+		return EI2C_NO_INIT;
+
 	status = HAL_I2C_Master_Transmit(&i2c_handle, dev_address, p_data, size, timeout_ms);
 	HAL_ERR_CHECK(status, EI2C_HAL_MASTER_TRANSMIT);
 
@@ -67,6 +75,9 @@ err_t i2c_master_tx(uint16_t dev_address, uint8_t *p_data, uint16_t size, uint32
 err_t i2c_master_rx(uint16_t dev_address, uint8_t *p_data, uint16_t size, uint32_t timeout_ms)
 {
 	HAL_StatusTypeDef status;
+
+	if (!m_initialized)
+		return EI2C_NO_INIT;
 
 	status = HAL_I2C_Master_Receive(&i2c_handle, dev_address, p_data, size, timeout_ms);
 	HAL_ERR_CHECK(status, EI2C_HAL_MASTER_RECEIVE);
