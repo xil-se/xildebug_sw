@@ -7,6 +7,7 @@
 #include "drivers/gpio.h"
 #include "drivers/i2c.h"
 #include "drivers/led.h"
+#include "drivers/max14662.h"
 #include "drivers/mcp4018t.h"
 #include "drivers/uart.h"
 
@@ -113,6 +114,10 @@ int main(void)
 		while (1) ;
 
 	status = adc_init();
+	if (status != HAL_OK)
+		while (1) ;
+
+	status = max14662_init(MAX14662_AD_0_0);
 	if (status != HAL_OK)
 		while (1) ;
 

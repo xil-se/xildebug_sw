@@ -13,3 +13,4 @@ enum MAX14662_address {
 HAL_StatusTypeDef max14662_set_value(enum MAX14662_address address, uint8_t val);
 uint8_t max14662_get_value_cached(enum MAX14662_address address);
 HAL_StatusTypeDef max14662_get_value(enum MAX14662_address address, uint8_t *p_val);
+HAL_StatusTypeDef max14662_init(enum MAX14662_address address);
