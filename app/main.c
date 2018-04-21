@@ -3,11 +3,12 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-#include "drivers/gpio.h"
-#include "drivers/uart.h"
-#include "drivers/i2c.h"
 #include "drivers/adc.h"
+#include "drivers/gpio.h"
+#include "drivers/i2c.h"
 #include "drivers/led.h"
+#include "drivers/mcp4018t.h"
+#include "drivers/uart.h"
 
 #define MAIN_TASK_STACK_SIZE	512
 #define MAIN_TASK_NAME			"Main"
@@ -112,6 +113,10 @@ int main(void)
 		while (1) ;
 
 	status = adc_init();
+	if (status != HAL_OK)
+		while (1) ;
+
+	status = mcp4018t_init();
 	if (status != HAL_OK)
 		while (1) ;
 
