@@ -9,43 +9,40 @@
 
 static uint8_t mcp4018t_value;
 
-HAL_StatusTypeDef mcp4018t_set_value(uint8_t val)
+err_t mcp4018t_set_value(uint8_t val)
 {
 	if (val > MAX_VALUE)
-		return HAL_ERROR;
+		return EMCP4018T_INVALID_ARG;
 
 	if (mcp4018t_value == val)
-		return HAL_OK;
+		return ERR_OK;
 
 	return i2c_master_tx(MCP4018T_ADDRESS << 1, &val, sizeof(val), I2C_TIMEOUT);
 }
 
-HAL_StatusTypeDef mcp4018t_get_value(uint8_t *p_val)
+err_t mcp4018t_get_value(uint8_t *p_val)
 {
 	return i2c_master_rx(MCP4018T_ADDRESS << 1, p_val, sizeof(*p_val), I2C_TIMEOUT);
 }
 
-HAL_StatusTypeDef mcp4018t_init(void)
+err_t mcp4018t_init(void)
 {
-	HAL_StatusTypeDef status;
 	uint8_t value;
+	err_t r;
 
-	status = mcp4018t_set_value(SELF_TEST_VALUE);
-	if (status != HAL_OK)
-		return status;
+	r = mcp4018t_set_value(SELF_TEST_VALUE);
+	ERR_CHECK(r);
 
-	status = mcp4018t_get_value(&value);
-	if (status != HAL_OK)
-		return status;
+	r = mcp4018t_get_value(&value);
+	ERR_CHECK(r);
 
 	if (value != SELF_TEST_VALUE)
-		return HAL_ERROR;
+		return EMCP4018T_INVALID_RESPONSE;
 
-	status = mcp4018t_set_value(DEFAULT_VALUE);
-	if (status != HAL_OK)
-		return status;
+	r = mcp4018t_set_value(DEFAULT_VALUE);
+	ERR_CHECK(r);
 
 	mcp4018t_value = DEFAULT_VALUE;
 
-	return HAL_OK;
+	return r;
 }

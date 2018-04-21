@@ -8,7 +8,7 @@ UART_HandleTypeDef *uart_get_handle(void)
 	return &uart_handle;
 }
 
-HAL_StatusTypeDef uart_init(void)
+err_t uart_init(void)
 {
 	HAL_StatusTypeDef status;
 
@@ -24,17 +24,16 @@ HAL_StatusTypeDef uart_init(void)
 	uart_handle.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
 
 	status = HAL_UART_Init(&uart_handle);
-	if (status != HAL_OK)
-		return status;
+	HAL_ERR_CHECK(status, EUART_HAL_INIT);
 
-	return status;
+	return ERR_OK;
 }
 
 void HAL_UART_MspInit(UART_HandleTypeDef *p_handle)
 {
 	GPIO_InitTypeDef gpio_config;
 
-	if(p_handle->Instance == USART3) {
+	if (p_handle->Instance == USART3) {
 		gpio_config.Pin = DUT_UART_TX_Pin|DUT_UART_RX_Pin;
 		gpio_config.Mode = GPIO_MODE_AF_PP;
 		gpio_config.Pull = GPIO_NOPULL;
@@ -46,7 +45,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef *p_handle)
 
 void HAL_UART_MspDeInit(UART_HandleTypeDef *p_handle)
 {
-	if(p_handle->Instance == USART3) {
+	if (p_handle->Instance == USART3) {
 		__HAL_RCC_USART3_CLK_DISABLE();
 
 		HAL_GPIO_DeInit(GPIOB, DUT_UART_TX_Pin|DUT_UART_RX_Pin);

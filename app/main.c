@@ -94,6 +94,7 @@ void main_task(void *p_arg)
 int main(void)
 {
 	HAL_StatusTypeDef status;
+	err_t r;
 
 	status = HAL_Init();
 	if (status != HAL_OK)
@@ -105,25 +106,20 @@ int main(void)
 
 	gpio_init();
 
-	status = i2c_init();
-	if (status != HAL_OK)
-		while (1) ;
+	r = i2c_init();
+	ERR_CHECK(r);
 
-	status = uart_init();
-	if (status != HAL_OK)
-		while (1) ;
+	r = uart_init();
+	ERR_CHECK(r);
 
-	status = adc_init();
-	if (status != HAL_OK)
-		while (1) ;
+	r = adc_init();
+	ERR_CHECK(r);
 
-	status = max14662_init(MAX14662_AD_0_0);
-	if (status != HAL_OK)
-		while (1) ;
+	r = max14662_init(MAX14662_AD_0_0);
+	ERR_CHECK(r);
 
-	status = mcp4018t_init();
-	if (status != HAL_OK)
-		while (1) ;
+	r = mcp4018t_init();
+	ERR_CHECK(r);
 
 	main_task_handle = xTaskCreateStatic(
 		main_task,
