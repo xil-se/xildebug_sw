@@ -1,6 +1,6 @@
 # XilDebug
 
-[<img src="https://travis-ci.org/xil-se/xildebug.svg?branch=master">](https://travis-ci.org/xil-se/xildebug)
+[<img src="https://travis-ci.org/xil-se/xildebug_sw.svg?branch=master">](https://travis-ci.org/xil-se/xildebug_sw)
 
 **XilDebug** is a piece of hardware that can act as a CMSIS-DAP compliant debugger, UART bridge and power profiler all in one package. This repository contains the firmware.
 
