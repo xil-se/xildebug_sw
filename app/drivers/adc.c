@@ -3,7 +3,7 @@
 
 ADC_HandleTypeDef adc_handle;
 
-HAL_StatusTypeDef adc_init(void)
+err_t adc_init(void)
 {
 	HAL_StatusTypeDef status;
 
@@ -29,8 +29,7 @@ HAL_StatusTypeDef adc_init(void)
 	adc_handle.Init.Oversampling.OversamplingStopReset = ADC_REGOVERSAMPLING_CONTINUED_MODE;
 
 	status = HAL_ADC_Init(&adc_handle);
-	if (status != HAL_OK)
-		return status;
+	HAL_ERR_CHECK(status, EADC_HAL_INIT);
 
 	ADC_ChannelConfTypeDef adc_config = {
 		.Channel = ADC_CHANNEL_5,
@@ -42,10 +41,9 @@ HAL_StatusTypeDef adc_init(void)
 	};
 
 	status = HAL_ADC_ConfigChannel(&adc_handle, &adc_config);
-	if (status != HAL_OK)
-		return status;
+	HAL_ERR_CHECK(status, EADC_HAL_CONFIG_CHANNEL);
 
-	return status;
+	return ERR_OK;
 }
 
 void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle)

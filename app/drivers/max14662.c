@@ -12,7 +12,6 @@
 #define SELF_TEST_VALUE_1	0b10101010
 #define SELF_TEST_VALUE_2	0b01010101
 #define DEFAULT_VALUE		0b00000000
-#define MAX_VALUE			0b11111111
 
 static uint8_t state[NUM_OF_MAX14662_ADDRESSES];
 
@@ -31,10 +30,10 @@ static uint8_t resolve_address(enum MAX14662_address address)
 	}
 }
 
-HAL_StatusTypeDef max14662_set_value(enum MAX14662_address address, uint8_t val)
+err_t max14662_set_value(enum MAX14662_address address, uint8_t val)
 {
-	HAL_StatusTypeDef status;
 	uint8_t i2c_address;
+	err_t r;
 	uint8_t data[2] = {
 		MAX14662_REG_ADDR,
 		val
@@ -44,16 +43,15 @@ HAL_StatusTypeDef max14662_set_value(enum MAX14662_address address, uint8_t val)
 		return HAL_OK;
 
 	i2c_address = resolve_address(address);
-	status = i2c_master_tx(i2c_address << 1, data, sizeof(data), I2C_TIMEOUT);
-	if (status != HAL_OK)
-		return status;
+	r = i2c_master_tx(i2c_address << 1, data, sizeof(data), I2C_TIMEOUT);
+	ERR_CHECK(r);
 
 	state[address] = val;
 
-	return status;
+	return r;
 }
 
-HAL_StatusTypeDef max14662_set_bit(enum MAX14662_address address, uint8_t bit, bool value)
+err_t max14662_set_bit(enum MAX14662_address address, uint8_t bit, bool value)
 {
 	const uint8_t current_value = state[address];
 	const bool masked_bit = !!(current_value & (1 << bit));
@@ -75,52 +73,42 @@ uint8_t max14662_get_value_cached(enum MAX14662_address address)
 	return state[address];
 }
 
-HAL_StatusTypeDef max14662_get_value(enum MAX14662_address address, uint8_t *p_val)
+err_t max14662_get_value(enum MAX14662_address address, uint8_t *p_val)
 {
-	HAL_StatusTypeDef status;
 	const uint8_t i2c_address = resolve_address(address);
 
-	status = i2c_master_rx(i2c_address << 1, p_val, sizeof(*p_val), I2C_TIMEOUT);
-	if (status != HAL_OK)
-		return status;
-	
-	return status;
+	return i2c_master_rx(i2c_address << 1, p_val, sizeof(*p_val), I2C_TIMEOUT);
 }
 
-static HAL_StatusTypeDef max14662_set_and_verify(enum MAX14662_address address, uint8_t value)
+static err_t max14662_set_and_verify(enum MAX14662_address address, uint8_t value)
 {
-	HAL_StatusTypeDef status;
 	uint8_t actual_value;
+	err_t r;
 
-	status = max14662_set_value(address, value);
-	if (status != HAL_OK)
-		return status;
+	r = max14662_set_value(address, value);
+	ERR_CHECK(r);
 
-	status = max14662_get_value(address, &actual_value);
-	if (status != HAL_OK)
-		return status;
+	r = max14662_get_value(address, &actual_value);
+	ERR_CHECK(r);
 
 	if (value != actual_value)
-		return HAL_ERROR;
+		return EMAX14662_INVALID_RESPONSE;
 
-	return HAL_OK;
+	return r;
 }
 
-HAL_StatusTypeDef max14662_init(enum MAX14662_address address)
+err_t max14662_init(enum MAX14662_address address)
 {
-	HAL_StatusTypeDef status;
+	err_t r;
 
-	status = max14662_set_and_verify(address, SELF_TEST_VALUE_1);
-	if (status != HAL_OK)
-		return status;
+	r = max14662_set_and_verify(address, SELF_TEST_VALUE_1);
+	ERR_CHECK(r);
 
-	status = max14662_set_and_verify(address, SELF_TEST_VALUE_2);
-	if (status != HAL_OK)
-		return status;
+	r = max14662_set_and_verify(address, SELF_TEST_VALUE_2);
+	ERR_CHECK(r);
 
-	status = max14662_set_value(address, DEFAULT_VALUE);
-	if (status != HAL_OK)
-		return status;
+	r = max14662_set_value(address, DEFAULT_VALUE);
+	ERR_CHECK(r);
 
 	return HAL_OK;
 }

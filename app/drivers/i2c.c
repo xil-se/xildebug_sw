@@ -3,7 +3,7 @@
 
 I2C_HandleTypeDef i2c_handle;
 
-HAL_StatusTypeDef i2c_init(void)
+err_t i2c_init(void)
 {
 	HAL_StatusTypeDef status;
 
@@ -18,18 +18,15 @@ HAL_StatusTypeDef i2c_init(void)
 	i2c_handle.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
 
 	status = HAL_I2C_Init(&i2c_handle);
-	if (status != HAL_OK)
-		return status;
+	HAL_ERR_CHECK(status, EI2C_HAL_INIT);
 
 	status = HAL_I2CEx_ConfigAnalogFilter(&i2c_handle, I2C_ANALOGFILTER_ENABLE);
-	if (status != HAL_OK)
-		return status;
+	HAL_ERR_CHECK(status, EI2C_HAL_CONFIG_ANALOG_FILTER);
 
 	status = HAL_I2CEx_ConfigDigitalFilter(&i2c_handle, 0);
-	if (status != HAL_OK)
-		return status;
+	HAL_ERR_CHECK(status, EI2C_HAL_CONFIG_DIGITAL_FILTER);
 
-	return status;
+	return ERR_OK;
 }
 
 void HAL_I2C_MspInit(I2C_HandleTypeDef *p_handle)
@@ -57,12 +54,22 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef *p_handle)
 	}
 }
 
-HAL_StatusTypeDef i2c_master_tx(uint16_t dev_address, uint8_t *p_data, uint16_t size, uint32_t timeout_ms)
+err_t i2c_master_tx(uint16_t dev_address, uint8_t *p_data, uint16_t size, uint32_t timeout_ms)
 {
-	return HAL_I2C_Master_Transmit(&i2c_handle, dev_address, p_data, size, timeout_ms);
+	HAL_StatusTypeDef status;
+
+	status = HAL_I2C_Master_Transmit(&i2c_handle, dev_address, p_data, size, timeout_ms);
+	HAL_ERR_CHECK(status, EI2C_HAL_MASTER_TRANSMIT);
+
+	return ERR_OK;
 }
 
-HAL_StatusTypeDef i2c_master_rx(uint16_t dev_address, uint8_t *p_data, uint16_t size, uint32_t timeout_ms)
+err_t i2c_master_rx(uint16_t dev_address, uint8_t *p_data, uint16_t size, uint32_t timeout_ms)
 {
-	return HAL_I2C_Master_Receive(&i2c_handle, dev_address, p_data, size, timeout_ms);
+	HAL_StatusTypeDef status;
+
+	status = HAL_I2C_Master_Receive(&i2c_handle, dev_address, p_data, size, timeout_ms);
+	HAL_ERR_CHECK(status, EI2C_HAL_MASTER_RECEIVE);
+
+	return ERR_OK;
 }
