@@ -14,7 +14,7 @@
 #define DEFAULT_VALUE		0b00000000
 #define MAX_VALUE			0b11111111
 
-static uint8_t max14662_state[NUM_OF_MAX14662_ADDRESSES];
+static uint8_t state[NUM_OF_MAX14662_ADDRESSES];
 
 static uint8_t resolve_address(enum MAX14662_address address)
 {
@@ -40,7 +40,7 @@ HAL_StatusTypeDef max14662_set_value(enum MAX14662_address address, uint8_t val)
 		val
 	};
 
-	if (max14662_state[address] == val)
+	if (state[address] == val)
 		return HAL_OK;
 
 	i2c_address = resolve_address(address);
@@ -48,14 +48,14 @@ HAL_StatusTypeDef max14662_set_value(enum MAX14662_address address, uint8_t val)
 	if (status != HAL_OK)
 		return status;
 
-	max14662_state[address] = val;
+	state[address] = val;
 
 	return status;
 }
 
 HAL_StatusTypeDef max14662_set_bit(enum MAX14662_address address, uint8_t bit, bool value)
 {
-	const uint8_t current_value = max14662_state[address];
+	const uint8_t current_value = state[address];
 	const bool masked_bit = !!(current_value & (1 << bit));
 	uint8_t new_value;
 
@@ -63,16 +63,16 @@ HAL_StatusTypeDef max14662_set_bit(enum MAX14662_address address, uint8_t bit, b
 		return HAL_OK;
 
 	if (value)
-		new_value = max14662_state[address] | (1 << bit);
+		new_value = state[address] | (1 << bit);
 	else
-		new_value = max14662_state[address] & (~(1 << bit));
+		new_value = state[address] & (~(1 << bit));
 	
 	return max14662_set_value(address, new_value);
 }
 
 uint8_t max14662_get_value_cached(enum MAX14662_address address)
 {
-	return max14662_state[address];
+	return state[address];
 }
 
 HAL_StatusTypeDef max14662_get_value(enum MAX14662_address address, uint8_t *p_val)
