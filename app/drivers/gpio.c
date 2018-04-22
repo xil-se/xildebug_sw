@@ -12,10 +12,16 @@ void gpio_init(void)
 	__HAL_RCC_GPIOB_CLK_ENABLE();
 
 	HAL_GPIO_WritePin(GPIOC, GPIO2_Pin | GPIO3_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOA, SHUNT1_EN_Pin | SHUNT2_EN_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOB, DUT_SWCLK_Pin | DUT_SWDIO_Pin | GPIO0_Pin | GPIO1_Pin, GPIO_PIN_RESET);
+
+	/* LEDs have inverted logic. Should be high (off) during boot sequence. */
 	HAL_GPIO_WritePin(GPIOH, DUT_UART_TX_LED_Pin | DUT_UART_RX_LED_Pin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(DUT_SWD_LED_GPIO_Port, DUT_SWD_LED_Pin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(GPIOA, SHUNT1_EN_Pin | SHUNT2_EN_Pin | LED_RGB_R_Pin | LED_RGB_G_Pin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(GPIOB, DUT_VDD_EN_Pin | DUT_SWCLK_Pin | DUT_SWDIO_Pin | LED_RGB_B_Pin | GPIO0_Pin | GPIO1_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOA, LED_RGB_R_Pin | LED_RGB_G_Pin | DUT_SWD_LED_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOB, LED_RGB_B_Pin, GPIO_PIN_SET);
+
+	/* Switches also have inverted logic. Should be high (off) during boot sequence. */
+	HAL_GPIO_WritePin(DUT_VDD_EN_GPIO_Port, DUT_VDD_EN_Pin, GPIO_PIN_SET);
 
 	gpio_config.Pin = GPIO2_Pin | GPIO3_Pin;
 	gpio_config.Mode = GPIO_MODE_OUTPUT_PP;
