@@ -3,11 +3,9 @@
 #include "drivers/gpio.h"
 #include "drivers/adc.h"
 
-#define NUM_OF_CHANNELS 2
-
 ADC_HandleTypeDef adc_handle;
 static bool m_initialized;
-static uint16_t m_adc_values[NUM_OF_CHANNELS];
+static uint16_t m_adc_values[NUM_OF_ADC_CHANNELS];
 static uint32_t m_adc_samples_count;
 static uint32_t m_errors_count;
 static adc_conversion_ready m_callback;
@@ -106,7 +104,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 	if (hadc->Instance->ISR & ADC_ISR_EOS) {
 		m_adc_values[1] = HAL_ADC_GetValue(&adc_handle);
 		if (m_callback)
-			m_callback(m_adc_values, NUM_OF_CHANNELS);
+			m_callback(m_adc_values);
 	} else {
 		m_adc_values[0] = HAL_ADC_GetValue(&adc_handle);
 	}
