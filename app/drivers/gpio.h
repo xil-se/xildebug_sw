@@ -1,5 +1,8 @@
 #pragma once
 
+#include <stdbool.h>
+#include <stdint.h>
+
 #define GPIO0_Pin GPIO_PIN_8
 #define GPIO0_GPIO_Port GPIOB
 #define GPIO1_Pin GPIO_PIN_9
@@ -52,3 +55,4 @@
 #define LED_RGB_R_GPIO_Port GPIOA
 
 void gpio_init(void);
+void gpio_write(void *p_port, uint32_t pin, bool value);

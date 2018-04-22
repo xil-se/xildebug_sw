@@ -61,3 +61,8 @@ void gpio_init(void)
 	gpio_config.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(GPIOH, &gpio_config);
 }
+
+void gpio_write(void *p_port, uint32_t pin, bool value)
+{
+	HAL_GPIO_WritePin((GPIO_TypeDef*) p_port, pin, value ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
