@@ -88,6 +88,11 @@ void HAL_MspInit(void)
 
 	/* SysTick_IRQn interrupt configuration */
 	HAL_NVIC_SetPriority(SysTick_IRQn, 15, 0);
+
+	/* ADC1_2_IRQn interrupt configuration
+	 * TODO: Review priorities when USB is in place.
+	 */
+	HAL_NVIC_SetPriority(ADC1_2_IRQn, 5, 0);
 }
 
 void SysTick_Handler(void)
