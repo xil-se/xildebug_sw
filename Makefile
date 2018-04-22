@@ -44,6 +44,7 @@ APP_SRCS := \
 	app/drivers/uart.c \
 	app/freertos.c \
 	app/main.c \
+	app/power.c \
 	app/stm32l4_hal.c
 
 APP_INCLUDES := \

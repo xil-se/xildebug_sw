@@ -10,6 +10,7 @@
 #include "drivers/max14662.h"
 #include "drivers/mcp4018t.h"
 #include "drivers/uart.h"
+#include "power.h"
 
 #define MAIN_TASK_STACK_SIZE	512
 #define MAIN_TASK_NAME			"Main"
@@ -119,6 +120,9 @@ int main(void)
 	ERR_CHECK(r);
 
 	r = mcp4018t_init();
+	ERR_CHECK(r);
+
+	r = power_init();
 	ERR_CHECK(r);
 
 	main_task_handle = xTaskCreateStatic(
