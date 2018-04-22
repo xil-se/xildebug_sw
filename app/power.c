@@ -9,10 +9,6 @@
 #include "drivers/mcp4018t.h"
 #include "power.h"
 
-/* TODO: Make sure these values match reality */
-#define MIN_MV 1700
-#define MAX_MV 4500
-
 #define POWER_TASK_STACK_SIZE	512
 #define POWER_TASK_NAME			"Power"
 #define POWER_TASK_PRIORITY		1
@@ -33,6 +29,18 @@ static bool m_shunt2_enabled;
 static bool m_dut_vdd_enabled;
 static uint16_t m_ldo_voltage;
 
+/* TODO: Add support to configure these calibration values */
+static uint32_t calib_min_mv = 1606;
+static uint32_t calib_max_mv = 5065;
+
+/*
+TODO: Uncomment when we need them
+static float calib_shunt_00 = 512.2f;
+static float calib_shunt_01 = 4.1f;
+static float calib_shunt_10 = 33.3f;
+static float calib_shunt_11 = 512.2f;
+*/
+
 /* Simple schematic of the resistor switch network.
  *
  * DUT_VDD_IN----[510R]----DUT_VDD_OUT----[DUT]----GND
@@ -43,11 +51,11 @@ static uint16_t m_ldo_voltage;
  * I.e. Current always flows through the 510R, but the total resistance may be lowered
  * by toggling the shunt resistor switches. The ts5a3167 switches have inverted logic.
  * 
- * S1 S2      R
- *  0  0 510.00
- *  0  1   1.79
- *  1  0  30.99
- *  1  1   1.70
+ * S1 S2      R   Measured resistance
+ *  0  0 510.00   512.2
+ *  0  1   1.79   4.1
+ *  1  0  30.99   33.3
+ *  1  1   1.70   4.0
  */
 
 static void shunt1_set_enabled(bool enabled)
@@ -59,7 +67,7 @@ static void shunt1_set_enabled(bool enabled)
 static void shunt2_set_enabled(bool enabled)
 {
 	gpio_write(SHUNT2_EN_GPIO_Port, SHUNT2_EN_Pin, !enabled);
-	m_shunt1_enabled = enabled;
+	m_shunt2_enabled = enabled;
 }
 
 void power_dut_set_enabled(bool enabled)
@@ -85,11 +93,13 @@ err_t power_dut_ldo_set(uint32_t millivolt)
 	if (!m_initialized)
 		return EPOWER_NO_INIT;
 
-	if (millivolt < MIN_MV || millivolt > MAX_MV)
-		return EPOWER_VOLTAGE_RANGE;
+	if (millivolt < calib_min_mv)
+		millivolt = calib_min_mv;
+	else if(millivolt > calib_max_mv)
+		millivolt = calib_max_mv;
 
-	const float factor = (((float)millivolt) - MIN_MV) / (MAX_MV - MIN_MV);
-	const uint8_t value = (uint8_t) (factor * 127);
+	const float factor = (calib_max_mv - ((float)millivolt)) / (calib_max_mv - calib_min_mv);
+	const uint8_t value = (uint8_t) (factor * 127 - 0.5f);
 
 	r = mcp4018t_set_value(value);
 	ERR_CHECK(r);
@@ -156,6 +166,11 @@ err_t power_init(void)
 	shunt2_set_enabled(true);
 
 	m_initialized = true;
+
+	/* TODO: Might want to keep this in persistent ram and/or flash so we can
+	 * resume with the previous values after a cold boot.
+	 */
+	power_dut_ldo_set(calib_min_mv);
 
 	return ERR_OK;
 }
