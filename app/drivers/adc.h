@@ -5,9 +5,11 @@
 
 #define EADC_HAL_INIT			(ADC_BASE + 0)
 #define EADC_HAL_CONFIG_CHANNEL	(ADC_BASE + 1)
-#define EADC_NO_INIT        	(ADC_BASE + 2)
+#define EADC_NO_INIT			(ADC_BASE + 2)
 
-typedef void (*adc_conversion_ready)(const uint16_t *p_adc_values, uint8_t num_values);
+#define NUM_OF_ADC_CHANNELS		2
+
+typedef void (*adc_conversion_ready)(const uint16_t *adc_values);
 
 err_t adc_init(void);
 err_t adc_start(void);
