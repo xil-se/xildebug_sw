@@ -28,13 +28,43 @@ static StaticQueue_t power_queue;
 static uint8_t power_queue_storage[QUEUE_LENGTH * QUEUE_ITEM_SIZE];
 
 static bool m_initialized;
+static bool m_shunt1_enabled;
+static bool m_shunt2_enabled;
 static bool m_dut_vdd_enabled;
 static uint16_t m_ldo_voltage;
 
+/* Simple schematic of the resistor switch network.
+ *
+ * DUT_VDD_IN----[510R]----DUT_VDD_OUT----[DUT]----GND
+ *            |           |
+ *     shunt1 |---[33R]---|
+ *     shunt2 |---[1R8]---|
+ *
+ * I.e. Current always flows through the 510R, but the total resistance may be lowered
+ * by toggling the shunt resistor switches. The ts5a3167 switches have inverted logic.
+ * 
+ * S1 S2      R
+ *  0  0 510.00
+ *  0  1   1.79
+ *  1  0  30.99
+ *  1  1   1.70
+ */
+
+static void shunt1_set_enabled(bool enabled)
+{
+	gpio_write(SHUNT1_EN_GPIO_Port, SHUNT1_EN_Pin, !enabled);
+	m_shunt1_enabled = enabled;
+}
+
+static void shunt2_set_enabled(bool enabled)
+{
+	gpio_write(SHUNT2_EN_GPIO_Port, SHUNT2_EN_Pin, !enabled);
+	m_shunt1_enabled = enabled;
+}
+
 void power_dut_set_enabled(bool enabled)
 {
-	gpio_write(DUT_VDD_EN_GPIO_Port, DUT_VDD_EN_Pin, enabled);
-
+	gpio_write(DUT_VDD_EN_GPIO_Port, DUT_VDD_EN_Pin, !enabled);
 	m_dut_vdd_enabled = enabled;
 }
 
@@ -120,6 +150,10 @@ err_t power_init(void)
 	adc_set_callback(adc_conversion_ready_handler);
 	r = adc_start();
 	ERR_CHECK(r);
+
+	power_dut_set_enabled(false);
+	shunt1_set_enabled(true);
+	shunt2_set_enabled(true);
 
 	m_initialized = true;
 
