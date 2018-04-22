@@ -7,7 +7,6 @@
 #define EPOWER_INVALID_ARG		(POWER_BASE + 1)
 #define EPOWER_TASK_CREATE		(POWER_BASE + 2)
 #define EPOWER_QUEUE_CREATE		(POWER_BASE + 3)
-#define EPOWER_VOLTAGE_RANGE	(POWER_BASE + 4)
 
 void power_dut_set_enabled(bool enabled);
 err_t power_dut_get_enabled(bool *p_enabled);
