@@ -3,6 +3,7 @@
 #include <queue.h>
 
 #include "drivers/gpio.h"
+#include "drivers/led.h"
 #include "drivers/uart.h"
 
 static DMA_HandleTypeDef hdma_usart3_tx;
