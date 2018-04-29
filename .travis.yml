@@ -11,3 +11,7 @@ before_script:
 
 script:
   - CFLAGS=-Werror make -j2
+
+branches:
+  only:
+  - master
