@@ -1,0 +1,39 @@
+{
+    "configurations": [
+        {
+            "name": "arm",
+            "includePath": [
+                "/opt/gcc-arm-none-eabi-7-2017-q4-major/arm-none-eabi/include",
+                "${workspaceFolder}",
+                "${workspaceFolder}",
+                "${workspaceFolder}/SDK/Drivers/CMSIS/Device/ST/STM32L4xx/Include",
+                "${workspaceFolder}/SDK/Drivers/CMSIS/Include",
+                "${workspaceFolder}/SDK/Drivers/STM32L4xx_HAL_Driver/Inc",
+                "${workspaceFolder}/SDK/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc",
+                "${workspaceFolder}/SDK/Middlewares/ST/STM32_USB_Device_Library/Class/HID/Inc",
+                "${workspaceFolder}/SDK/Middlewares/ST/STM32_USB_Device_Library/Core/Inc",
+                "${workspaceFolder}/SDK/Middlewares/Third_Party/FreeRTOS/Source/include",
+                "${workspaceFolder}/SDK/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F",
+                "${workspaceFolder}/app/config",
+                "${workspaceFolder}/app"
+            ],
+            "defines": [
+                "USE_HAL_DRIVER",
+                "STM32L433xx"
+            ],
+            "intelliSenseMode": "clang-x64",
+            "browse": {
+                "path": [
+                    "/opt/gcc-arm-none-eabi-7-2017-q4-major/arm-none-eabi/include",
+                    "${workspaceFolder}"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            },
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 3
+}

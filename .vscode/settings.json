@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "led.h": "c",
+        "type_traits": "cpp",
+        "max14662.h": "c",
+        "mcp4018t.h": "c",
+        "stm32l4xx_hal.h": "c",
+        "semphr.h": "c"
+    }
+}
