@@ -60,6 +60,7 @@ APP_SRCS := \
 	app/drivers/usb_cdc.c \
 	app/drivers/usb_hid.c \
 	app/drivers/usb_ll.c \
+	app/cdc_uart_bridge.c \
 	app/freertos.c \
 	app/freertos-openocd.c \
 	app/main.c \

@@ -12,6 +12,11 @@
 #define EUSB_CDC_BUSY			(EUSB_CDC_BASE + 5)
 #define EUSB_CDC_RX_TIMEOUT		(EUSB_CDC_BASE + 6)
 
-err_t usb_cdc_rx(const uint8_t **pp_buf, uint16_t *p_len, uint32_t timeout_ticks);
+struct rx_queue_item {
+	uint8_t len;
+	uint8_t data[64];
+} __packed;
+
+err_t usb_cdc_rx(struct rx_queue_item *p_rx_queue_item, uint32_t timeout_ticks);
 err_t usb_cdc_tx(uint8_t *p_buf, uint16_t len);
 err_t usb_cdc_init(USBD_HandleTypeDef *p_usbd);

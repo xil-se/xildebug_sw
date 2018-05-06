@@ -6,36 +6,46 @@
 #include "drivers/usb.h"
 #include "drivers/uart.h"
 
-#define APP_RX_DATA_SIZE  1000
-#define APP_TX_DATA_SIZE  1000
+#define APP_RX_DATA_SIZE  USB_FS_MAX_PACKET_SIZE
+#define APP_TX_DATA_SIZE  USB_FS_MAX_PACKET_SIZE
+
+#define QUEUE_LENGTH    10
+#define ITEM_SIZE       sizeof(struct rx_queue_item)
 
 static struct {
 	bool initialized;
 	USBD_HandleTypeDef *usbd_handle;
-	uint8_t rx_buff[APP_RX_DATA_SIZE];
-	uint8_t tx_buff[APP_TX_DATA_SIZE];
+	uint8_t tx_buf[APP_TX_DATA_SIZE];
+	struct rx_queue_item rx_buf[2];
+	uint8_t rx_buf_idx;
+	uint8_t *p_rx_buf;
 	uint16_t rx_len;
-	SemaphoreHandle_t rx_done_semaphore;
-	StaticSemaphore_t rx_done_semaphore_buffer;
+	StaticQueue_t rx_queue;
+	QueueHandle_t rx_queue_handle;
+	uint8_t rx_queue_storage[QUEUE_LENGTH * ITEM_SIZE];
+	SemaphoreHandle_t tx_done_semaphore;
+	StaticSemaphore_t tx_done_semaphore_buffer;
 } self;
 
 static int8_t usb_cdc_if_init(void);
 static int8_t usb_cdc_if_deinit(void);
 static int8_t usb_cdc_ctrl(uint8_t cmd, uint8_t *p_buf, uint16_t len);
 static int8_t usb_cdc_rx_irq(uint8_t *p_buf, uint32_t *p_len);
+static int8_t usb_cdc_tx_done_irq(void);
 
 static USBD_CDC_ItfTypeDef usb_cdc_if_ops =
 {
 	usb_cdc_if_init,
 	usb_cdc_if_deinit,
 	usb_cdc_ctrl,
-	usb_cdc_rx_irq
+	usb_cdc_rx_irq,
+	usb_cdc_tx_done_irq,
 };
 
 static int8_t usb_cdc_if_init(void)
 {
-	USBD_CDC_SetTxBuffer(self.usbd_handle, self.tx_buff, 0);
-	USBD_CDC_SetRxBuffer(self.usbd_handle, self.rx_buff);
+	USBD_CDC_SetTxBuffer(self.usbd_handle, self.tx_buf, 0);
+	USBD_CDC_SetRxBuffer(self.usbd_handle, self.rx_buf[0].data);
 
 	return USBD_OK;
 }
@@ -102,33 +112,45 @@ static int8_t usb_cdc_ctrl(uint8_t cmd, uint8_t *p_buf, uint16_t len)
 static int8_t usb_cdc_rx_irq(uint8_t *p_buf, uint32_t *p_len)
 {
 	static BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+	struct rx_queue_item *p_old = &self.rx_buf[self.rx_buf_idx];
+	
+	self.rx_buf_idx = (self.rx_buf_idx + 1) % 2;
+	
+	struct rx_queue_item *p_new = &self.rx_buf[self.rx_buf_idx];
 
-	USBD_CDC_SetRxBuffer(self.usbd_handle, &p_buf[0]);
+	USBD_CDC_SetRxBuffer(self.usbd_handle, p_new->data);
 	USBD_CDC_ReceivePacket(self.usbd_handle);
 
-	self.rx_len = *p_len;
+	p_old->len = *p_len;
 
-	xSemaphoreGiveFromISR(self.rx_done_semaphore, &xHigherPriorityTaskWoken);
+	xQueueSendFromISR(self.rx_queue_handle, p_old, &xHigherPriorityTaskWoken);
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 
 	return USBD_OK;
 }
 
-err_t usb_cdc_rx(const uint8_t **pp_buf, uint16_t *p_len, uint32_t timeout_ticks)
+err_t usb_cdc_rx(struct rx_queue_item *p_rx_queue_item, uint32_t timeout_ticks)
 {
 	if (!self.initialized)
 		return EUSB_CDC_NO_INIT;
 
-	if (!pp_buf || !p_len)
+	if (!p_rx_queue_item)
 		return EUSB_CDC_INVALID_ARG;
 
-	if (xSemaphoreTake(self.rx_done_semaphore, timeout_ticks) == pdFALSE)
+	if (xQueueReceive(self.rx_queue_handle, p_rx_queue_item, timeout_ticks) == pdFALSE)
 		return EUSB_CDC_RX_TIMEOUT;
 
-	*pp_buf = self.rx_buff;
-	*p_len = self.rx_len;
-
 	return ERR_OK;
+}
+
+static int8_t usb_cdc_tx_done_irq(void)
+{
+	static BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+	xSemaphoreGiveFromISR(self.tx_done_semaphore, &xHigherPriorityTaskWoken);
+	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+
+	return USBD_OK;
 }
 
 err_t usb_cdc_tx(uint8_t *p_buf, uint16_t len)
@@ -138,15 +160,32 @@ err_t usb_cdc_tx(uint8_t *p_buf, uint16_t len)
 	if (!self.initialized)
 		return EUSB_CDC_NO_INIT;
 
-	USBD_CDC_HandleTypeDef *p_cdc = (USBD_CDC_HandleTypeDef*)self.usbd_handle->pClassData;
-	if (p_cdc->TxState != 0)
-		return EUSB_CDC_BUSY;
+	//USBD_CDC_HandleTypeDef *p_cdc = (USBD_CDC_HandleTypeDef*)self.usbd_handle->pClassData;
+	//if (p_cdc->TxState != 0)
+	//	return EUSB_CDC_BUSY;
+	// todo: replace with semaphoretake(pcd_rx_semph)
+	//while (p_cdc->TxState != 0) ;
+	//xSemaphoreTake(self.tx_done_semaphore, portMAX_DELAY);
+
+	xSemaphoreTake(self.tx_done_semaphore, portMAX_DELAY);
 
 	USBD_CDC_SetTxBuffer(self.usbd_handle, p_buf, len);
 	status = USBD_CDC_TransmitPacket(self.usbd_handle);
 	if (status != USBD_OK)
 		return EUSB_CDC_TRANSMIT;
 
+	return ERR_OK;
+}
+
+err_t usb_cdc_stall_rx(void)
+{
+	USBD_LL_StallEP(self.usbd_handle, CDC_OUT_EP);
+	return ERR_OK;
+}
+
+err_t usb_cdc_clear_stall_rx(void)
+{
+	USBD_LL_ClearStallEP(self.usbd_handle, CDC_OUT_EP);
 	return ERR_OK;
 }
 
@@ -169,7 +208,13 @@ err_t usb_cdc_init(USBD_HandleTypeDef *p_usbd)
 	if (status != USBD_OK)
 		return EUSB_CDC_REG_IF;
 
-	self.rx_done_semaphore = xSemaphoreCreateBinaryStatic(&self.rx_done_semaphore_buffer);
+	self.rx_queue_handle = xQueueCreateStatic(QUEUE_LENGTH,
+							ITEM_SIZE,
+							self.rx_queue_storage,
+							&self.rx_queue);
+
+	self.tx_done_semaphore = xSemaphoreCreateBinaryStatic(&self.tx_done_semaphore_buffer);
+	xSemaphoreGive(self.tx_done_semaphore);
 
 	self.initialized = true;
 

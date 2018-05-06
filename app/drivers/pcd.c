@@ -41,6 +41,7 @@ void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *p_pcd, uint8_t epnum)
 void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *p_pcd, uint8_t epnum)
 {
 	USBD_LL_DataInStage(p_pcd->pData, epnum, p_pcd->IN_ep[epnum].xfer_buff);
+	// TODO add semaphore give here?
 }
 
 void HAL_PCD_SOFCallback(PCD_HandleTypeDef *p_pcd)

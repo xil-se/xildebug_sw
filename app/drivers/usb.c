@@ -181,8 +181,8 @@ err_t usb_init(void)
 	if (status != USBD_OK)
 		return EUSB_USBD_INIT;
 
-	//r = usb_cdc_init(&self.usbd_handle);
-	r = usb_hid_init(&self.usbd_handle);
+	r = usb_cdc_init(&self.usbd_handle);
+	//r = usb_hid_init(&self.usbd_handle);
 	ERR_CHECK(r);
 
 	status = USBD_Start(&self.usbd_handle);

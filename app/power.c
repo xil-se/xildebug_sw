@@ -171,8 +171,8 @@ err_t power_init(void)
 		return EPOWER_QUEUE_CREATE;
 
 	adc_set_callback(adc_conversion_ready_handler);
-	r = adc_start();
-	ERR_CHECK(r);
+	//r = adc_start();
+	//ERR_CHECK(r);
 
 	power_dut_set_enabled(false);
 	shunt1_set_enabled(true);

@@ -670,8 +670,13 @@ static uint8_t  USBD_CDC_DataIn (USBD_HandleTypeDef *pdev, uint8_t epnum)
   
   if(pdev->pClassData != NULL)
   {
-    
     hcdc->TxState = 0;
+    if(pdev->pClassData != NULL)
+    {
+      ((USBD_CDC_ItfTypeDef *)pdev->pUserData)->TransmitDone();
+
+      return USBD_OK;
+    }
 
     return USBD_OK;
   }

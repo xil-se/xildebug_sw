@@ -6,11 +6,15 @@
 #include "drivers/gpio.h"
 #include "drivers/led.h"
 #include "drivers/uart.h"
+#include "drivers/usb_cdc.h"
 
 static struct {
 	DMA_HandleTypeDef hdma_usart3_tx;
 	DMA_HandleTypeDef hdma_usart3_rx;
 	UART_HandleTypeDef uart_handle;
+
+	struct rx_queue_item uart_rx_item;
+	QueueHandle_t uart_rx_queue_handle;
 
 	SemaphoreHandle_t tx_busy_semaphore;
 	StaticSemaphore_t tx_busy_semaphore_buffer;
@@ -112,12 +116,15 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
+volatile int g_uart_rx_irq = 0;
+
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	static BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-
-	xSemaphoreGiveFromISR(self.rx_done_semaphore, &xHigherPriorityTaskWoken);
+//	xSemaphoreGiveFromISR(self.rx_done_semaphore, &xHigherPriorityTaskWoken);
+	xQueueSendFromISR(self.uart_rx_queue_handle, &self.uart_rx_item, &xHigherPriorityTaskWoken);
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+	HAL_UART_Receive_DMA(&self.uart_handle, (uint8_t*) self.uart_rx_item.data, self.uart_rx_item.len);
 }
 
 void USART3_IRQHandler(void)
@@ -132,6 +139,7 @@ void DMA1_Channel2_IRQHandler(void)
 
 void DMA1_Channel3_IRQHandler(void)
 {
+	g_uart_rx_irq = 1;
 	HAL_DMA_IRQHandler(&self.hdma_usart3_rx);
 }
 
@@ -170,35 +178,59 @@ out:
 	return r;
 }
 
+err_t uart_start_rx(QueueHandle_t queue)
+{
+	HAL_StatusTypeDef status;
+
+	self.uart_rx_queue_handle = queue;
+	self.uart_rx_item.len = 64;
+	status = HAL_UART_Receive_DMA(&self.uart_handle, (uint8_t*) self.uart_rx_item.data, self.uart_rx_item.len);
+	HAL_ERR_CHECK(status, EUART_RX);
+
+	return ERR_OK;
+}
+
+volatile int g_uart_rx = 0;
 err_t uart_rx(uint8_t *p_buf, uint32_t size, uint32_t timeout_ticks)
 {
 	HAL_StatusTypeDef status;
 	err_t r = ERR_OK;
-
+g_uart_rx=1;
 	if (xSemaphoreTake(self.rx_busy_semaphore, timeout_ticks) == pdFALSE)
 		return EUART_RX_SEMPH;
+g_uart_rx=2;
 
 	if (xSemaphoreTake(self.rx_done_semaphore, timeout_ticks) == pdFALSE) {
 		goto out;
 	}
+g_uart_rx=3;
 
-	status = HAL_UART_Receive_DMA(&self.uart_handle, (uint8_t*) p_buf, size);
+//	status = HAL_UART_AbortReceive(&self.uart_handle);
+//	status = HAL_UART_Receive_DMA(&self.uart_handle, (uint8_t*) p_buf, size);
+	status = HAL_UART_Receive_IT(&self.uart_handle, (uint8_t*) p_buf, size);
 	if (status != HAL_OK) {
 		r = HAL_ERROR_SET(status, EUART_RX);
 		goto out;
 	}
+g_uart_rx=4;
+g_uart_rx_irq=0;
 
 	if (xSemaphoreTake(self.rx_done_semaphore, timeout_ticks) == pdFALSE) {
+		g_uart_rx=8;
 		status = HAL_UART_AbortReceive(&self.uart_handle);
 		/* Give semaphore because the IRQ handler will never be called if we abort */
 		xSemaphoreGive(self.rx_done_semaphore);
+		g_uart_rx=9;
 		r = EUART_RX_TIMEOUT;
 		goto out;
 	}
+g_uart_rx=5;
 	xSemaphoreGive(self.rx_done_semaphore);
+g_uart_rx=6;
 
 out:
 	xSemaphoreGive(self.rx_busy_semaphore);
+g_uart_rx=7;
 	return r;
 }
 
