@@ -58,13 +58,15 @@ static void rx_task(void *p_arg)
 				;
 		}
 
-		led_tx_set(true);
-		xTimerReset(self.tx_led_timer, 0);
-
 		r = uart_tx(rx_queue_item.data, rx_queue_item.len, portMAX_DELAY, true);
-		if (r != ERR_OK) {
-			while (1)
-				;
+		switch (r) {
+		case ERR_OK:
+			led_tx_set(true);
+			xTimerReset(self.tx_led_timer, 0);
+		case EUART_DISABLED:
+			break;
+		default:
+			while (1);
 		}
 	}
 }
@@ -151,6 +153,9 @@ err_t cdc_uart_bridge_init(void)
 		( void * ) 0,
 		timer_callback,
 		&self.rx_led_timer_storage);
+
+	r = uart_enable();
+	ERR_CHECK(r);
 
 	r = uart_start_rx(self.tx_queue_handle);
 	ERR_CHECK(r);
