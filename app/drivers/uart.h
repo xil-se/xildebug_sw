@@ -6,15 +6,17 @@
 
 #include "errors.h"
 
-#define EUART_HAL_INIT					(EUART_BASE + 0)
-#define EUART_TX_SEMPH					(EUART_BASE + 1)
-#define EUART_RX_SEMPH					(EUART_BASE + 2)
-#define EUART_TX_TIMEOUT				(EUART_BASE + 3)
-#define EUART_RX_TIMEOUT				(EUART_BASE + 4)
-#define EUART_TX						(EUART_BASE + 5)
-#define EUART_RX						(EUART_BASE + 6)
-#define EUART_FLUSH_RX					(EUART_BASE + 7)
-#define EUART_INVALID_ARG				(EUART_BASE + 8)
+#define EUART_NO_INIT					(EUART_BASE + 0x00)
+#define EUART_DISABLED					(EUART_BASE + 0x01)
+#define EUART_INVALID_ARG				(EUART_BASE + 0x02)
+#define EUART_HAL_INIT					(EUART_BASE + 0x03)
+#define EUART_TX_SEMPH					(EUART_BASE + 0x04)
+#define EUART_TX_TIMEOUT				(EUART_BASE + 0x05)
+#define EUART_TX						(EUART_BASE + 0x06)
+#define EUART_RX_SEMPH					(EUART_BASE + 0x07)
+#define EUART_RX_TIMEOUT				(EUART_BASE + 0x08)
+#define EUART_RX						(EUART_BASE + 0x09)
+#define EUART_FLUSH_RX					(EUART_BASE + 0x0A)
 
 enum uart_stopbits {
 	UART_STOPBITS_CONFIG_1		= 0,
@@ -41,4 +43,6 @@ err_t uart_tx(const uint8_t *p_buf, uint32_t size, uint32_t timeout_ticks, bool 
 err_t uart_start_rx(QueueHandle_t queue);
 err_t uart_flush_rx(void);
 err_t uart_config_set(const struct uart_line_coding * const p_config);
+err_t uart_enable(void);
+err_t uart_disable(void);
 err_t uart_init(void);

@@ -4,6 +4,7 @@
 #include <task.h>
 
 #include "drivers/gpio.h"
+#include "drivers/max14662.h"
 #include "drivers/uart.h"
 #include "drivers/usb/cdc.h"
 #include "stm32l4xx_hal.h"
@@ -26,12 +27,10 @@ static struct {
 	StaticSemaphore_t rx_busy_semaphore_buffer;
 	SemaphoreHandle_t rx_done_semaphore;
 	StaticSemaphore_t rx_done_semaphore_buffer;
-} self;
 
-UART_HandleTypeDef *uart_get_handle(void)
-{
-	return &self.uart_handle;
-}
+	bool enabled;
+	bool initialized;
+} self;
 
 void HAL_UART_MspInit(UART_HandleTypeDef *p_handle)
 {
@@ -159,6 +158,12 @@ err_t uart_tx(const uint8_t *p_buf, uint32_t size, uint32_t timeout_ticks, bool 
 	HAL_StatusTypeDef status;
 	err_t r = ERR_OK;
 
+	if (!self.initialized)
+		return EUART_NO_INIT;
+
+	if (!self.enabled)
+		return EUART_DISABLED;
+
 	if (xSemaphoreTake(self.tx_busy_semaphore, timeout_ticks) == pdFALSE)
 		return EUART_TX_SEMPH;
 
@@ -191,6 +196,12 @@ err_t uart_start_rx(QueueHandle_t queue)
 {
 	HAL_StatusTypeDef status;
 
+	if (!self.initialized)
+		return EUART_NO_INIT;
+
+	if (!self.enabled)
+		return EUART_DISABLED;
+
 	self.rx_queue_handle = queue;
 	status = HAL_UART_Receive_DMA(&self.uart_handle, (uint8_t*) self.rx_item.data, USB_FS_MAX_PACKET_SIZE);
 	HAL_ERR_CHECK(status, EUART_RX);
@@ -202,6 +213,12 @@ err_t uart_flush_rx(void)
 {
 	HAL_StatusTypeDef status;
 
+	if (!self.initialized)
+		return EUART_NO_INIT;
+
+	if (!self.enabled)
+		return EUART_DISABLED;
+
 	/* HAL_UART_AbortReceiveCpltCallback restarts DMA */
 	status = HAL_UART_AbortReceive_IT(&self.uart_handle);
 	HAL_ERR_CHECK(status, EUART_FLUSH_RX);
@@ -209,15 +226,13 @@ err_t uart_flush_rx(void)
 	return ERR_OK;
 }
 
-err_t uart_config_set(const struct uart_line_coding * const p_config)
+static err_t parse_config(UART_InitTypeDef *p_dest, const struct uart_line_coding * const p_src)
 {
-	UART_InitTypeDef hal_config;
-	HAL_StatusTypeDef status;
 	uint32_t value;
-	
-	hal_config.BaudRate = p_config->baudrate_bps;
 
-	switch (p_config->databits) {
+	p_dest->BaudRate = p_src->baudrate_bps;
+
+	switch (p_src->databits) {
 	case 7:
 		value = UART_WORDLENGTH_7B;
 		break;
@@ -227,9 +242,9 @@ err_t uart_config_set(const struct uart_line_coding * const p_config)
 	default:
 		return EUART_INVALID_ARG;
 	};
-	hal_config.WordLength = value;
+	p_dest->WordLength = value;
 
-	switch (p_config->stopbits) {
+	switch (p_src->stopbits) {
 	case UART_STOPBITS_CONFIG_1:
 		value = UART_STOPBITS_1;
 		break;
@@ -242,9 +257,9 @@ err_t uart_config_set(const struct uart_line_coding * const p_config)
 	default:
 		return EUART_INVALID_ARG;
 	};
-	hal_config.StopBits = value;
+	p_dest->StopBits = value;
 
-	switch (p_config->parity) {
+	switch (p_src->parity) {
 	case UART_PARITY_CONFIG_NONE:
 		value = UART_PARITY_NONE;
 		break;
@@ -257,16 +272,76 @@ err_t uart_config_set(const struct uart_line_coding * const p_config)
 	default:
 		return EUART_INVALID_ARG;
 	};
-	hal_config.Parity = value;
+	p_dest->Parity = value;
 
-	hal_config.Mode = UART_MODE_TX_RX;
-	hal_config.HwFlowCtl = UART_HWCONTROL_NONE;
-	hal_config.OverSampling = UART_OVERSAMPLING_16;
-	hal_config.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+	p_dest->Mode = UART_MODE_TX_RX;
+	p_dest->HwFlowCtl = UART_HWCONTROL_NONE;
+	p_dest->OverSampling = UART_OVERSAMPLING_16;
+	p_dest->OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+
+	return ERR_OK;
+}
+
+err_t uart_config_set(const struct uart_line_coding * const p_config)
+{
+	UART_InitTypeDef hal_config;
+	HAL_StatusTypeDef status;
+	err_t r;
+	
+	if (!self.initialized)
+		return EUART_NO_INIT;
+
+	if (!self.enabled)
+		return EUART_DISABLED;
+
+	r = parse_config(&hal_config, p_config);
+	ERR_CHECK(r);
 
 	self.uart_handle.Init = hal_config;
 	status = UART_SetConfig(&self.uart_handle);
 	HAL_ERR_CHECK(status, EUART_HAL_INIT);
+
+	return ERR_OK;
+}
+
+err_t uart_enable(void)
+{
+	err_t r;
+
+	if (!self.initialized)
+		return EUART_NO_INIT;
+	
+	if (self.enabled)
+		return ERR_OK;
+
+	r = max14662_set_bit(MAX14662_AD_0_0, MAX14662_BIT_UART_RX, true);
+	ERR_CHECK(r);
+
+	r = max14662_set_bit(MAX14662_AD_0_0, MAX14662_BIT_UART_TX, true);
+	ERR_CHECK(r);
+
+	self.enabled = true;
+
+	return ERR_OK;
+}
+
+err_t uart_disable(void)
+{
+	err_t r;
+
+	if (!self.initialized)
+		return EUART_NO_INIT;
+
+	if (!self.enabled)
+		return ERR_OK;
+
+	r = max14662_set_bit(MAX14662_AD_0_0, MAX14662_BIT_UART_RX, false);
+	ERR_CHECK(r);
+
+	r = max14662_set_bit(MAX14662_AD_0_0, MAX14662_BIT_UART_TX, false);
+	ERR_CHECK(r);
+
+	self.enabled = false;
 
 	return ERR_OK;
 }
@@ -298,6 +373,8 @@ err_t uart_init(void)
 	xSemaphoreGive(self.rx_busy_semaphore);
 	self.rx_done_semaphore = xSemaphoreCreateBinaryStatic(&self.rx_done_semaphore_buffer);
 	xSemaphoreGive(self.rx_done_semaphore);
+
+	self.initialized = true;
 
 	return ERR_OK;
 }
