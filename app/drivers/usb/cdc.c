@@ -1,12 +1,13 @@
-#include "drivers/usb/cdc.h"
-#include "drivers/usb/core.h"
-#include "drivers/usb.h"
-#include "drivers/uart.h"
-
 #include <FreeRTOS.h>
 #include <semphr.h>
 #include <queue.h>
 #include <stdbool.h>
+#include <string.h>
+
+#include "drivers/usb/cdc.h"
+#include "drivers/usb/core.h"
+#include "drivers/usb.h"
+#include "drivers/uart.h"
 
 #define CLASS_IDX		1
 #define QUEUE_LENGTH	10
@@ -50,6 +51,8 @@ static USBD_ClassTypeDef cdc_class_def = {
 
 static void cdc_ctrl(uint8_t cmd, uint8_t *p_buf, uint16_t len)
 {
+	err_t r;
+
 	switch (cmd) {
 	case CDC_SEND_ENCAPSULATED_COMMAND:
 		break;
@@ -84,6 +87,11 @@ static void cdc_ctrl(uint8_t cmd, uint8_t *p_buf, uint16_t len)
 		/* 6      | bDataBits  |   1   | Number Data bits (5, 6, 7, 8 or 16).          */
 		/*******************************************************************************/
 	case CDC_SET_LINE_CODING:
+		if (len != sizeof(struct uart_line_coding))
+			break;
+		r = uart_config_set((struct uart_line_coding *)p_buf);
+		(void) r;
+		/* TODO: Handle r somehow */
 		break;
 
 	case CDC_GET_LINE_CODING:

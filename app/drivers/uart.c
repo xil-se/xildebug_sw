@@ -209,11 +209,62 @@ err_t uart_flush_rx(void)
 	return ERR_OK;
 }
 
-err_t uart_config_set(UART_InitTypeDef *p_config)
+err_t uart_config_set(const struct uart_line_coding * const p_config)
 {
+	UART_InitTypeDef hal_config;
 	HAL_StatusTypeDef status;
+	uint32_t value;
+	
+	hal_config.BaudRate = p_config->baudrate_bps;
 
-	self.uart_handle.Init = *p_config;
+	switch (p_config->databits) {
+	case 7:
+		value = UART_WORDLENGTH_7B;
+		break;
+	case 8:
+		value = UART_WORDLENGTH_8B;
+		break;
+	default:
+		return EUART_INVALID_ARG;
+	};
+	hal_config.WordLength = value;
+
+	switch (p_config->stopbits) {
+	case UART_STOPBITS_CONFIG_1:
+		value = UART_STOPBITS_1;
+		break;
+	case UART_STOPBITS_CONFIG_1_5:
+		value = UART_STOPBITS_1_5;
+		break;
+	case UART_STOPBITS_CONFIG_2:
+		value = UART_STOPBITS_2;
+		break;
+	default:
+		return EUART_INVALID_ARG;
+	};
+	hal_config.StopBits = value;
+
+	switch (p_config->parity) {
+	case UART_PARITY_CONFIG_NONE:
+		value = UART_PARITY_NONE;
+		break;
+	case UART_PARITY_CONFIG_ODD:
+		value = UART_PARITY_ODD;
+		break;
+	case UART_PARITY_CONFIG_EVEN:
+		value = UART_PARITY_EVEN;
+		break;
+	default:
+		return EUART_INVALID_ARG;
+	};
+	hal_config.Parity = value;
+
+	hal_config.Mode = UART_MODE_TX_RX;
+	hal_config.HwFlowCtl = UART_HWCONTROL_NONE;
+	hal_config.OverSampling = UART_OVERSAMPLING_16;
+	hal_config.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+
+	self.uart_handle.Init = hal_config;
 	status = UART_SetConfig(&self.uart_handle);
 	HAL_ERR_CHECK(status, EUART_HAL_INIT);
 
