@@ -74,7 +74,7 @@ err_t max14662_set_value(enum MAX14662_address address, uint8_t val)
 	return r;
 }
 
-err_t max14662_set_bit(enum MAX14662_address address, uint8_t bit, bool value)
+err_t max14662_set_bit(enum MAX14662_address address, enum MAX14662_bit bit, bool value)
 {
 	const uint8_t current_value = self.state[address];
 	const bool masked_bit = !!(current_value & (1 << bit));
