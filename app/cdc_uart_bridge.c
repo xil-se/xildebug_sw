@@ -152,10 +152,6 @@ err_t cdc_uart_bridge_init(void)
 		timer_callback,
 		&self.rx_led_timer_storage);
 
-	// TODO: enable only rx and tx
-	r = max14662_set_value(MAX14662_AD_0_0, 0xff);
-	ERR_CHECK(r);
-
 	r = uart_start_rx(self.tx_queue_handle);
 	ERR_CHECK(r);
 

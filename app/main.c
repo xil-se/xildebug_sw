@@ -97,9 +97,6 @@ void main_task(void *p_arg)
 {
 	int i = 0;
 
-	/* TODO: Handle this properly later... */
-	max14662_set_value(MAX14662_AD_0_0, 0xff);
-
 	while (1) {
 		i++;
 		led_rgb_set(i % 8);
