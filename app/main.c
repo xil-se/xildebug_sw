@@ -139,13 +139,13 @@ int main(void)
 	r = mcp4018t_init();
 	ERR_CHECK(r);
 
-	r = power_init();
-	ERR_CHECK(r);
-
 	r = usb_init();
 	ERR_CHECK(r);
 
 	r = cdc_uart_bridge_init();
+	ERR_CHECK(r);
+
+	r = power_init();
 	ERR_CHECK(r);
 
 	main_task_handle = xTaskCreateStatic(
