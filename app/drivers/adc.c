@@ -8,6 +8,7 @@ static bool m_initialized;
 static uint16_t m_adc_values[NUM_OF_ADC_CHANNELS];
 static uint32_t m_adc_current_index;
 static uint32_t m_errors_count;
+static uint32_t m_last_error;
 static adc_conversion_ready m_callback;
 
 /* This is the actual IRQ handler. Need to forward it to the HAL. */
@@ -121,6 +122,8 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 void HAL_ADC_ErrorCallback(ADC_HandleTypeDef *hadc)
 {
 	m_errors_count++;
+	m_last_error = hadc->ErrorCode;
+	ADC_CLEAR_ERRORCODE(hadc);
 }
 
 void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle)
