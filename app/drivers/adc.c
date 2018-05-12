@@ -102,19 +102,19 @@ void adc_set_callback(adc_conversion_ready callback)
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
-	const bool is_end_of_sequence = hadc->Instance->ISR & ADC_ISR_EOS;
+	m_adc_values[m_adc_current_index] = (uint16_t) LL_ADC_REG_ReadConversionData32(adc_handle.Instance);
+	m_adc_current_index++;
 
-	m_adc_values[m_adc_current_index++] = HAL_ADC_GetValue(&adc_handle);
-
-	/* If End Of Sequence is set, the last sample in our sequence is done. */
-	if (is_end_of_sequence && m_adc_current_index >= NUM_OF_ADC_CHANNELS) {
+	/* If End Of Sequence is set, then we have just read the last sample in the sequence. */
+	if ((hadc->Instance->ISR & ADC_FLAG_EOS)) {
+		/* Only call the callback if our counting matches, ignore otherwise. */
+		if (m_adc_current_index == NUM_OF_ADC_CHANNELS) {
+			if (m_callback)
+				m_callback(m_adc_values);
+		}
 		m_adc_current_index = 0;
-		if (m_callback)
-			m_callback(m_adc_values);
-	} else if (m_adc_current_index >= NUM_OF_ADC_CHANNELS) {
-		/* We must've missed at least one interrupt.
-		 * Throw away old samples as they might be out of order and start over.
-		 */
+	} else if (m_adc_current_index == NUM_OF_ADC_CHANNELS) {
+		/* We end up here in case our counting is off as well. Restart and hope for the best. */
 		m_adc_current_index = 0;
 	}
 }
