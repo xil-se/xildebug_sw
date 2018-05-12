@@ -35,12 +35,12 @@ err_t adc_init(void)
 	adc_handle.Init.ExternalTrigConv = ADC_SOFTWARE_START;
 	adc_handle.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
 	adc_handle.Init.DMAContinuousRequests = DISABLE;
-	adc_handle.Init.Overrun = ADC_OVR_DATA_PRESERVED;
+	adc_handle.Init.Overrun = ADC_OVR_DATA_OVERWRITTEN;
 	adc_handle.Init.OversamplingMode = ENABLE;
 	adc_handle.Init.Oversampling.Ratio = ADC_OVERSAMPLING_RATIO_16;
 	adc_handle.Init.Oversampling.RightBitShift = ADC_RIGHTBITSHIFT_NONE;
 	adc_handle.Init.Oversampling.TriggeredMode = ADC_TRIGGEREDMODE_SINGLE_TRIGGER;
-	adc_handle.Init.Oversampling.OversamplingStopReset = ADC_REGOVERSAMPLING_CONTINUED_MODE;
+	adc_handle.Init.Oversampling.OversamplingStopReset = ADC_REGOVERSAMPLING_RESUMED_MODE;
 
 	status = HAL_ADC_Init(&adc_handle);
 	HAL_ERR_CHECK(status, EADC_HAL_INIT);
