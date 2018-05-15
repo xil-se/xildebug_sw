@@ -34,9 +34,10 @@
 #define DUT_VDD_EN_Pin GPIO_PIN_0
 #define DUT_VDD_EN_GPIO_Port GPIOB
 
-#define DUT_SWCLK_Pin GPIO_PIN_1
+#define DUT_SWCLK_Pin GPIO_PIN_3
 #define DUT_SWCLK_GPIO_Port GPIOB
-#define DUT_SWDIO_Pin GPIO_PIN_2
+
+#define DUT_SWDIO_Pin GPIO_PIN_4
 #define DUT_SWDIO_GPIO_Port GPIOB
 
 #define DUT_UART_TX_Pin GPIO_PIN_10

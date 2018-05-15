@@ -25,6 +25,8 @@ SDK_SRCS := \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_ll_usb.c \
+	SDK/Middlewares/Third_Party/cmsis-dap/DAP.c \
+	SDK/Middlewares/Third_Party/cmsis-dap/SW_DP.c \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/list.c \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
@@ -36,6 +38,7 @@ SDK_INCLUDES := \
 	SDK/Drivers/CMSIS/Device/ST/STM32L4xx/Include \
 	SDK/Drivers/CMSIS/Include \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Inc \
+	SDK/Middlewares/Third_Party/cmsis-dap \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/include \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
 
@@ -56,6 +59,7 @@ APP_SRCS := \
 	app/cdc_uart_bridge.c \
 	app/freertos.c \
 	app/freertos-openocd.c \
+	app/hid_dap_bridge.c \
 	app/main.c \
 	app/power.c \
 	app/stm32l4_hal.c
