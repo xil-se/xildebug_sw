@@ -13,6 +13,7 @@
 #include "drivers/usb.h"
 #include "drivers/usb/cdc.h"
 #include "drivers/usb/hid.h"
+#include "hid_dap_bridge.h"
 #include "power.h"
 #include "stm32l4xx_hal.h"
 
@@ -84,7 +85,7 @@ HAL_StatusTypeDef SystemClock_Config(void)
 
 int _write(int fd, const char *msg, int len)
 {
-	uart_tx((const uint8_t*)msg, len, 100, true);
+	usb_cdc_tx((uint8_t*)msg, len);
 	return len;
 }
 
@@ -145,6 +146,9 @@ int main(void)
 	ERR_CHECK(r);
 
 	r = cdc_uart_bridge_init();
+	ERR_CHECK(r);
+
+	r = hid_dap_bridge_init();
 	ERR_CHECK(r);
 
 	main_task_handle = xTaskCreateStatic(
