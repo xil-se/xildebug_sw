@@ -122,10 +122,15 @@ stlink:
 	-c "init ; reset halt"
 .PHONY: stlink
 
+ifneq ($(DAPLINK_SERIAL),)
+DAPLINK_SERIAL_CMD := "-c cmsis_dap_serial $(DAPLINK_SERIAL)"
+endif
+
 daplink:
 	@openocd \
 	-f interface/cmsis-dap.cfg \
 	-f target/stm32l4x.cfg \
+	$(DAPLINK_SERIAL_CMD) \
 	-c "stm32l4x.cpu configure -rtos FreeRTOS" \
 	-c "init ; reset halt"
 .PHONY: daplink
