@@ -74,14 +74,33 @@ static void shunt2_set_enabled(bool enabled)
 	self.shunt2_enabled = enabled;
 }
 
+#define DATA_SAMPLES 30
+struct power_data {
+	uint32_t magic;
+	uint16_t samples[DATA_SAMPLES];
+} __packed__;
+
 static void power_task(void *p_arg)
 {
 	uint16_t adc_values[NUM_OF_ADC_CHANNELS];
+	static struct power_data data = {0};
+	static int counter = 0;
+
+	data.magic = 0x44332211;
 
 	for (;;) {
 		xQueueReceive(self.queue_handle, adc_values, portMAX_DELAY);
 
 		/* TODO: Do stuff with the values */
+//		printf("%d %d %d\r\n", adc_values[0], adc_values[1],  adc_values[2]);
+//		printf("%d\r\n", adc_values[0]);
+
+		data.samples[counter++] = adc_values[0];
+		
+		if (counter == DATA_SAMPLES) {
+			usb_cdc_tx(&data, sizeof(struct power_data));
+			counter = 0;
+		}
 	}
 }
 
@@ -174,7 +193,7 @@ err_t power_init(void)
 	r = adc_start();
 	ERR_CHECK(r);
 
-	power_dut_set_enabled(false);
+	power_dut_set_enabled(true);
 	shunt1_set_enabled(true);
 	shunt2_set_enabled(true);
 
@@ -186,7 +205,8 @@ err_t power_init(void)
 	/* TODO: Might want to keep this in persistent ram and/or flash so we can
 	 * resume with the previous values after a cold boot.
 	 */
-	power_dut_ldo_set(self.calib_min_mv);
+	//power_dut_ldo_set(self.calib_min_mv);
+	power_dut_ldo_set(3300);
 
 	return ERR_OK;
 }
