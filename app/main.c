@@ -85,7 +85,7 @@ HAL_StatusTypeDef SystemClock_Config(void)
 
 int _write(int fd, const char *msg, int len)
 {
-	uart_tx((const uint8_t*)msg, len, 100, true);
+	usb_cdc_tx((uint8_t *) msg, len);
 	return len;
 }
 
@@ -117,8 +117,8 @@ void main_task(void *p_arg)
 	r = usb_init();
 	ERR_CHECK(r);
 
-	r = cdc_uart_bridge_init();
-	ERR_CHECK(r);
+	//r = cdc_uart_bridge_init();
+	//ERR_CHECK(r);
 
 	r = power_init();
 	ERR_CHECK(r);

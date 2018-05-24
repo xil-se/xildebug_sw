@@ -38,7 +38,7 @@ err_t adc_init(void)
 	adc_handle.Init.Overrun = ADC_OVR_DATA_OVERWRITTEN;
 	adc_handle.Init.OversamplingMode = ENABLE;
 	adc_handle.Init.Oversampling.Ratio = ADC_OVERSAMPLING_RATIO_16;
-	adc_handle.Init.Oversampling.RightBitShift = ADC_RIGHTBITSHIFT_NONE;
+	adc_handle.Init.Oversampling.RightBitShift = ADC_RIGHTBITSHIFT_1;
 	adc_handle.Init.Oversampling.TriggeredMode = ADC_TRIGGEREDMODE_SINGLE_TRIGGER;
 	adc_handle.Init.Oversampling.OversamplingStopReset = ADC_REGOVERSAMPLING_RESUMED_MODE;
 
@@ -56,7 +56,7 @@ err_t adc_init(void)
 
 	status = HAL_ADC_ConfigChannel(&adc_handle, &adc_config);
 	HAL_ERR_CHECK(status, EADC_HAL_CONFIG_CHANNEL);
-
+/*
 	adc_config.Channel = ADC_CHANNEL_6;
 	adc_config.Rank = ADC_REGULAR_RANK_2;
 	status = HAL_ADC_ConfigChannel(&adc_handle, &adc_config);
@@ -66,7 +66,7 @@ err_t adc_init(void)
 	adc_config.Rank = ADC_REGULAR_RANK_3;
 	status = HAL_ADC_ConfigChannel(&adc_handle, &adc_config);
 	HAL_ERR_CHECK(status, EADC_HAL_CONFIG_CHANNEL);
-
+*/
 	m_initialized = true;
 
 	return ERR_OK;
