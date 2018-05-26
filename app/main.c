@@ -97,29 +97,7 @@ int _read(int fd, char *msg, int len)
 void main_task(void *p_arg)
 {
 	int i = 0;
-
-	while (1) {
-		i++;
-		led_rgb_set(i % 8);
-
-		vTaskDelay(pdMS_TO_TICKS(250));
-	}
-}
-
-int main(void)
-{
-	HAL_StatusTypeDef status;
 	err_t r;
-
-	status = HAL_Init();
-	if (status != HAL_OK)
-		while (1) ;
-
-	status = SystemClock_Config();
-	if (status != HAL_OK)
-		while (1) ;
-
-	gpio_init();
 
 	r = i2c_init();
 	ERR_CHECK(r);
@@ -145,6 +123,28 @@ int main(void)
 	r = power_init();
 	ERR_CHECK(r);
 
+	while (1) {
+		i++;
+		led_rgb_set(i % 8);
+
+		vTaskDelay(pdMS_TO_TICKS(250));
+	}
+}
+
+int main(void)
+{
+	HAL_StatusTypeDef status;
+
+	status = HAL_Init();
+	if (status != HAL_OK)
+		while (1) ;
+
+	status = SystemClock_Config();
+	if (status != HAL_OK)
+		while (1) ;
+
+	gpio_init();
+
 	main_task_handle = xTaskCreateStatic(
 		main_task,
 		MAIN_TASK_NAME,
@@ -159,9 +159,7 @@ int main(void)
 
 	vTaskStartScheduler();
 
-	while (1) {
-
-	}
+	while (1) ;
 
 	return 0;
 }
