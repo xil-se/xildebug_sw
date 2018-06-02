@@ -245,16 +245,15 @@ err_t usb_cdc_tx(uint8_t *p_buf, uint16_t len)
 	return ERR_OK;
 }
 
-err_t usb_cdc_init(const void *p_data)
+err_t usb_cdc_init(const struct cdc_init_data *p_data)
 {
-	const struct cdc_init_data *p_init_data = (const struct cdc_init_data *)p_data;
 	HAL_StatusTypeDef status;
 
 	if (self.initialized)
 		return ERR_OK;
 
-	self.p_usbd = p_init_data->p_usbd;
-	self.p_pcd = p_init_data->p_pcd;
+	self.p_usbd = p_data->p_usbd;
+	self.p_pcd = p_data->p_pcd;
 
 	HAL_PCDEx_PMAConfig(self.p_pcd, CDC_CMD_EP, PCD_SNG_BUF, USB_PMA_BASE + 2 * USB_FS_MAX_PACKET_SIZE);
 

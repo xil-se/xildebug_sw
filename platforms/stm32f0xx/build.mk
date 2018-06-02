@@ -47,3 +47,4 @@ DEFS     += USE_HAL_DRIVER STM32F072xB
 CFLAGS  += -mcpu=cortex-m0 -mthumb
 LDFLAGS += -mcpu=cortex-m0 -mthumb -T$(LDSCRIPT)
 
+OPENOCD_TARGET := stm32f0x

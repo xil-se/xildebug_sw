@@ -8,7 +8,7 @@
 #include "drivers/mcp4018t.h"
 #include "platform/uart.h"
 #include "platform/usb/usb.h"
-#if 0
+#if (FEAT_POWER_PROFILER == 1)
 #include "platform/usb/cdc.h"
 #include "platform/usb/hid.h"
 #include "platform/adc.h"
