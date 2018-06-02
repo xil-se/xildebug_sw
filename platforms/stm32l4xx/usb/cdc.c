@@ -4,10 +4,13 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "drivers/usb/cdc.h"
-#include "drivers/usb/core.h"
-#include "drivers/usb.h"
-#include "drivers/uart.h"
+#include "hal_errors.h"
+#include "platform/uart.h"
+#include "platform/usb/cdc.h"
+#include "platform/usb/usb.h"
+#include "usb/core.h"
+#include "stm32l4xx_hal.h"
+#include "cdc_internal.h"
 
 #define CLASS_IDX		1
 #define QUEUE_LENGTH	10
@@ -242,20 +245,21 @@ err_t usb_cdc_tx(uint8_t *p_buf, uint16_t len)
 	return ERR_OK;
 }
 
-err_t usb_cdc_init(USBD_HandleTypeDef *p_usbd, PCD_HandleTypeDef *p_pcd)
+err_t usb_cdc_init(const void *p_data)
 {
+	const struct cdc_init_data *p_init_data = (const struct cdc_init_data *)p_data;
 	HAL_StatusTypeDef status;
 
 	if (self.initialized)
 		return ERR_OK;
 
-	self.p_usbd = p_usbd;
-	self.p_pcd = p_pcd;
+	self.p_usbd = p_init_data->p_usbd;
+	self.p_pcd = p_init_data->p_pcd;
 
-	HAL_PCDEx_PMAConfig(p_pcd, CDC_CMD_EP, PCD_SNG_BUF, USB_PMA_BASE + 2 * USB_FS_MAX_PACKET_SIZE);
+	HAL_PCDEx_PMAConfig(self.p_pcd, CDC_CMD_EP, PCD_SNG_BUF, USB_PMA_BASE + 2 * USB_FS_MAX_PACKET_SIZE);
 
-	HAL_PCDEx_PMAConfig(p_pcd, CDC_IN_EP,  PCD_SNG_BUF, USB_PMA_BASE + 4 * USB_FS_MAX_PACKET_SIZE);
-	HAL_PCDEx_PMAConfig(p_pcd, CDC_OUT_EP, PCD_SNG_BUF, USB_PMA_BASE + 5 * USB_FS_MAX_PACKET_SIZE);
+	HAL_PCDEx_PMAConfig(self.p_pcd, CDC_IN_EP,  PCD_SNG_BUF, USB_PMA_BASE + 4 * USB_FS_MAX_PACKET_SIZE);
+	HAL_PCDEx_PMAConfig(self.p_pcd, CDC_OUT_EP, PCD_SNG_BUF, USB_PMA_BASE + 5 * USB_FS_MAX_PACKET_SIZE);
 
 	status = USBD_RegisterClass(self.p_usbd, CLASS_IDX, &cdc_class_def);
 	HAL_ERR_CHECK(status, EUSB_CDC_REG_CLASS);

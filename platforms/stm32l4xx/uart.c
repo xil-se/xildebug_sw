@@ -4,9 +4,10 @@
 #include <task.h>
 
 #include "drivers/max14662.h"
-#include "drivers/uart.h"
-#include "drivers/usb/cdc.h"
+#include "hal_errors.h"
 #include "platform/gpio.h"
+#include "platform/uart.h"
+#include "platform/usb/cdc.h"
 #include "stm32l4xx_hal.h"
 #include "stm32l4xx_ll_dma.h"
 

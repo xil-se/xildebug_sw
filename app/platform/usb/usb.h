@@ -1,6 +1,6 @@
 #pragma once
 
-#include "drivers/usb/def.h"
+#include "usb/def.h"
 #include "errors.h"
 
 #define EUSB_NO_INIT			(EUSB_BASE + 0)

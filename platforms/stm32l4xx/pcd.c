@@ -1,9 +1,9 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "drivers/pcd.h"
-#include "drivers/usb/ctlreq.h"
-#include "drivers/usb/core.h"
+#include "pcd.h"
+#include "usb/ctlreq.h"
+#include "usb/core.h"
 #include "stm32l4xx_hal.h"
 
 static struct {

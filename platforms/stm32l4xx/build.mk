@@ -25,6 +25,13 @@ PLATFORM_SRCS := \
 	platforms/$(PLATFORM)/adc.c \
 	platforms/$(PLATFORM)/gpio.c \
 	platforms/$(PLATFORM)/i2c.c \
+	platforms/$(PLATFORM)/pcd.c \
+	platforms/$(PLATFORM)/uart.c \
+	platforms/$(PLATFORM)/usb.c \
+	platforms/$(PLATFORM)/usb/core.c \
+	platforms/$(PLATFORM)/usb/cdc.c \
+	platforms/$(PLATFORM)/usb/ctlreq.c \
+	platforms/$(PLATFORM)/usb/hid.c \
 
 PLATFORM_INCLUDES := \
 	platforms/$(PLATFORM)/config \

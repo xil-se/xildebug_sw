@@ -27,7 +27,7 @@
 
 #pragma once
 
-#include "drivers/usb/def.h"
+#include "usb/def.h"
 #include "stm32l4xx_hal.h"
 
 HAL_StatusTypeDef USBD_Init(USBD_HandleTypeDef *p_dev, PCD_HandleTypeDef *p_pcd, USBD_DescriptorsTypeDef *p_desc);

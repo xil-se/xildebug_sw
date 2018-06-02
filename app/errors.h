@@ -1,6 +1,7 @@
 #pragma once
 
-#include "stm32l4xx_hal.h"
+#include <stdint.h>
+#include <stdbool.h>
 
 typedef uint32_t err_t;
 
@@ -8,15 +9,6 @@ typedef uint32_t err_t;
 	do { \
 		if ((r) != ERR_OK) \
 			for(;;); \
-	} while (0)
-
-#define HAL_ERROR_GET(x) (((x) >> 14) & 0x3)
-#define HAL_ERROR_SET(hal_status, err_to_return) (err_to_return | ((hal_status) << 14))
-
-#define HAL_ERR_CHECK(hal_status, err_to_return) \
-	do { \
-		if ((hal_status) != HAL_OK) \
-			return HAL_ERROR_SET(err_to_return, hal_status); \
 	} while (0)
 
 #define ERR_OK					(0)

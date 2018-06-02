@@ -1,5 +1,6 @@
 #include <stdbool.h>
 
+#include "hal_errors.h"
 #include "platform/adc.h"
 #include "platform/gpio.h"
 

@@ -6,8 +6,8 @@
 #include "cdc_uart_bridge.h"
 #include "drivers/led.h"
 #include "drivers/max14662.h"
-#include "drivers/uart.h"
-#include "drivers/usb/cdc.h"
+#include "platform/uart.h"
+#include "platform/usb/cdc.h"
 
 #define RX_TASK_STACK_SIZE		512
 #define RX_TASK_NAME			"CDCrx"
