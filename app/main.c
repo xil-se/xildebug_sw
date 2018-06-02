@@ -8,12 +8,14 @@
 #include "drivers/mcp4018t.h"
 #include "platform/uart.h"
 #include "platform/usb/usb.h"
+#if 0
 #include "platform/usb/cdc.h"
 #include "platform/usb/hid.h"
 #include "platform/adc.h"
-#include "platform/gpio.h"
 #include "platform/i2c.h"
 #include "power.h"
+#endif
+#include "platform/gpio.h"
 #include "target.h"
 
 #define MAIN_TASK_STACK_SIZE	512
@@ -26,7 +28,7 @@ static StaticTask_t main_task_tcb;
 
 int _write(int fd, const char *msg, int len)
 {
-	uart_tx((const uint8_t*)msg, len, 100, true);
+//	uart_tx((const uint8_t*)msg, len, 100, true);
 	return len;
 }
 
@@ -40,10 +42,8 @@ void main_task(void *p_arg)
 	int i = 0;
 	err_t r;
 
+#if (FEAT_POWER_PROFILER == 1)
 	r = i2c_init();
-	ERR_CHECK(r);
-
-	r = uart_init();
 	ERR_CHECK(r);
 
 	r = adc_init();
@@ -55,13 +55,17 @@ void main_task(void *p_arg)
 	r = mcp4018t_init();
 	ERR_CHECK(r);
 
+	r = power_init();
+	ERR_CHECK(r);
+#endif
+
+	r = uart_init();
+	ERR_CHECK(r);
+
 	r = usb_init();
 	ERR_CHECK(r);
 
 	r = cdc_uart_bridge_init();
-	ERR_CHECK(r);
-
-	r = power_init();
 	ERR_CHECK(r);
 
 	while (1) {

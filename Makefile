@@ -10,6 +10,25 @@ TARGET ?= xildebug_big
 include targets/$(TARGET)/build.mk
 include platforms/$(PLATFORM)/build.mk
 
+# Feature flags go here
+FEAT_POWER_PROFILER		?= 0
+FEAT_DUT_SWITCH			?= 0
+
+ifeq ($(FEAT_POWER_PROFILER),1)
+	ifeq ($(FEAT_DUT_SWITCH),0)
+	$(error FEAT_POWER_PROFILER requires FEAT_DUT_SWITCH)
+	endif
+TARGET_SRCS += \
+	app/drivers/mcp4018t.c \
+	app/power.c
+endif
+APP_CFLAGS  += -DFEAT_POWER_PROFILER=$(FEAT_POWER_PROFILER)
+
+ifeq ($(FEAT_DUT_SWITCH),1)
+TARGET_SRCS += app/drivers/max14662.c
+endif
+APP_CFLAGS += -DFEAT_DUT_SWITCH=$(FEAT_DUT_SWITCH)
+
 TARGET_SRCS += \
 	$(PLATFORM_SRCS) \
 
@@ -31,15 +50,12 @@ MIDDLEWARE_INCLUDES += \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/include \
 
 APP_SRCS := \
-	app/drivers/led.c \
-	app/drivers/max14662.c \
-	app/drivers/mcp4018t.c \
 	app/cdc_uart_bridge.c \
+	app/drivers/led.c \
 	app/errorhandler.c \
-	app/freertos.c \
 	app/freertos-openocd.c \
+	app/freertos.c \
 	app/main.c \
-	app/power.c
 
 APP_INCLUDES := \
 	app/config \
@@ -92,7 +108,7 @@ stlink:
 	@openocd \
 	-f interface/stlink-v2.cfg \
 	-c "transport select hla_swd" \
-	-f target/stm32l4x.cfg \
+	-f target/stm32f0x.cfg \
 	-c "init ; reset halt"
 .PHONY: stlink
 
@@ -103,9 +119,9 @@ endif
 daplink:
 	@openocd \
 	-f interface/cmsis-dap.cfg \
-	-f target/stm32l4x.cfg \
+	-f target/stm32f0x.cfg \
 	$(DAPLINK_SERIAL_CMD) \
-	-c "stm32l4x.cpu configure -rtos FreeRTOS" \
+	-c "stm32f0x.cpu configure -rtos FreeRTOS" \
 	-c "init ; reset halt"
 .PHONY: daplink
 

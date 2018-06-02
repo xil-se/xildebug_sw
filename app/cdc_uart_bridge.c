@@ -57,7 +57,8 @@ static void rx_task(void *p_arg)
 				;
 		}
 
-		r = uart_tx(rx_queue_item.data, rx_queue_item.len, portMAX_DELAY, true);
+		usb_cdc_tx(rx_queue_item.data, rx_queue_item.len);
+		r = uart_tx(rx_queue_item.data, rx_queue_item.len, 1000, true);
 		switch (r) {
 		case ERR_OK:
 			led_tx_set(true);
@@ -84,7 +85,7 @@ static void tx_task(void *p_arg)
 			continue;
 		}
 
-		led_rx_set(true);
+		//led_rx_set(true);
 		xTimerReset(self.rx_led_timer, 0);
 
 		r = usb_cdc_tx(item.data, item.len);
@@ -99,7 +100,7 @@ static void timer_callback(TimerHandle_t timer_handle)
 	if (timer_handle == self.tx_led_timer) {
 		led_tx_set(false);
 	} else if (timer_handle == self.rx_led_timer) {
-		led_rx_set(false);
+		//led_rx_set(false);
 	}
 }
 
