@@ -241,16 +241,15 @@ err_t usb_hid_send(uint8_t *p_buf, uint16_t len)
 	return ERR_OK;
 }
 
-err_t usb_hid_init(const void *p_data)
+err_t usb_hid_init(const struct hid_init_data *p_data)
 {
-	const struct hid_init_data *p_init_data = (const struct hid_init_data *)p_data;
 	HAL_StatusTypeDef status;
 
 	if (self.initialized)
 		return ERR_OK;
 
-	self.p_usbd = p_init_data->p_usbd;
-	self.p_pcd = p_init_data->p_pcd;
+	self.p_usbd = p_data->p_usbd;
+	self.p_pcd = p_data->p_pcd;
 
 	HAL_PCDEx_PMAConfig(self.p_pcd, HID_OUT_EP, PCD_SNG_BUF, USB_PMA_BASE + 3 * USB_FS_MAX_PACKET_SIZE);
 	HAL_PCDEx_PMAConfig(self.p_pcd, HID_IN_EP,  PCD_SNG_BUF, USB_PMA_BASE + 6 * USB_FS_MAX_PACKET_SIZE);

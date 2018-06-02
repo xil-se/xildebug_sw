@@ -46,3 +46,4 @@ DEFS     += USE_HAL_DRIVER STM32L433xx
 CFLAGS  += -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 LDFLAGS += -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard -T$(LDSCRIPT)
 
+OPENOCD_TARGET := stm32l4x

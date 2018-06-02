@@ -3,6 +3,9 @@
 #include "platform/usb/usb.h"
 #include "errors.h"
 
+/* Located in platforms/$platform/usb/ */
+#include "usb/cdc_internal.h"
+
 #define EUSB_CDC_NO_INIT		(EUSB_CDC_BASE + 0)
 #define EUSB_CDC_INVALID_ARG	(EUSB_CDC_BASE + 1)
 #define EUSB_CDC_REG_CLASS		(EUSB_CDC_BASE + 2)
@@ -17,4 +20,4 @@
 
 err_t usb_cdc_rx(struct usb_rx_queue_item *p_rx_queue_item, uint32_t timeout_ticks);
 err_t usb_cdc_tx(uint8_t *p_buf, uint16_t len);
-err_t usb_cdc_init(const void *p_data);
+err_t usb_cdc_init(const struct cdc_init_data *p_data);

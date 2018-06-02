@@ -11,8 +11,8 @@ include targets/$(TARGET)/build.mk
 include platforms/$(PLATFORM)/build.mk
 
 # Feature flags go here
-FEAT_POWER_PROFILER		?= 0
-FEAT_DUT_SWITCH			?= 0
+FEAT_POWER_PROFILER	?= 0
+FEAT_DUT_SWITCH		?= 0
 
 ifeq ($(FEAT_POWER_PROFILER),1)
 	ifeq ($(FEAT_DUT_SWITCH),0)
@@ -51,7 +51,6 @@ MIDDLEWARE_INCLUDES += \
 
 APP_SRCS := \
 	app/cdc_uart_bridge.c \
-	app/drivers/led.c \
 	app/errorhandler.c \
 	app/freertos-openocd.c \
 	app/freertos.c \
@@ -68,7 +67,8 @@ CFLAGS   += \
 	-Wall -Wextra -Wpedantic -Wno-unused-parameter -std=c99 -Os -g \
 	-ffunction-sections -fdata-sections -fomit-frame-pointer \
 	$(addprefix -D, $(DEFS)) \
-	$(addprefix -I, $(INCLUDES))
+	$(addprefix -I, $(INCLUDES)) \
+	$(APP_CFLAGS)
 
 LDFLAGS  +=
 LIBS     := -Wl,--gc-sections,--undefined=uxTopUsedPriority --specs=nano.specs -lc -lnosys
@@ -108,7 +108,7 @@ stlink:
 	@openocd \
 	-f interface/stlink-v2.cfg \
 	-c "transport select hla_swd" \
-	-f target/stm32f0x.cfg \
+	-f target/$(OPENOCD_TARGET) \
 	-c "init ; reset halt"
 .PHONY: stlink
 
@@ -118,10 +118,10 @@ endif
 
 daplink:
 	@openocd \
-	-f interface/cmsis-dap.cfg \
-	-f target/stm32f0x.cfg \
+	-f "interface/cmsis-dap.cfg" \
+	-f "target/$(OPENOCD_TARGET).cfg" \
 	$(DAPLINK_SERIAL_CMD) \
-	-c "stm32f0x.cpu configure -rtos FreeRTOS" \
+	-c "$(OPENOCD_TARGET).cpu configure -rtos FreeRTOS" \
 	-c "init ; reset halt"
 .PHONY: daplink
 

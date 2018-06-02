@@ -3,6 +3,9 @@
 #include "platform/usb/usb.h"
 #include "errors.h"
 
+/* Located in platforms/$platform/usb/ */
+#include "usb/hid_internal.h"
+
 #define EUSB_HID_NO_INIT		(EUSB_HID_BASE + 0)
 #define EUSB_HID_REG_CLASS		(EUSB_HID_BASE + 1)
 #define EUSB_HID_TRANSMIT		(EUSB_HID_BASE + 2)
@@ -19,4 +22,4 @@
 
 err_t usb_hid_recv(struct usb_rx_queue_item *p_rx_queue_item, uint32_t timeout_ticks);
 err_t usb_hid_send(uint8_t *p_buf, uint16_t len);
-err_t usb_hid_init(const void *p_data);
+err_t usb_hid_init(const struct hid_init_data *p_data);
