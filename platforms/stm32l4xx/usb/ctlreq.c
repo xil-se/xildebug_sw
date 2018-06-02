@@ -25,8 +25,8 @@
   ******************************************************************************
   */
 
-#include "drivers/usb/core.h"
-#include "drivers/usb/ctlreq.h"
+#include "usb/core.h"
+#include "usb/ctlreq.h"
 #include "stm32l4xx_hal.h"
 
 #include <string.h>

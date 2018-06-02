@@ -1,11 +1,14 @@
-#include "drivers/usb.h"
-#include "drivers/usb/cdc.h"
-#include "drivers/usb/core.h"
-#include "drivers/usb/ctlreq.h"
-#include "drivers/usb/hid.h"
-#include "drivers/pcd.h"
-
 #include <stdbool.h>
+
+#include "hal_errors.h"
+#include "pcd.h"
+#include "platform/usb/cdc.h"
+#include "platform/usb/hid.h"
+#include "platform/usb/usb.h"
+#include "usb/core.h"
+#include "usb/ctlreq.h"
+#include "usb/cdc_internal.h"
+#include "usb/hid_internal.h"
 
 static struct {
 	bool initialized;
@@ -346,10 +349,16 @@ err_t usb_init(void)
 	status = USBD_Init(&self.usbd_handle, &self.pcd_handle, &desc_funcs);
 	HAL_ERR_CHECK(status, EUSB_USBD_INIT);
 
-	r = usb_hid_init(&self.usbd_handle, &self.pcd_handle);
+	r = usb_hid_init(&((struct hid_init_data){
+		.p_usbd = &self.usbd_handle,
+		.p_pcd = &self.pcd_handle
+	}));
 	ERR_CHECK(r);
 
-	r = usb_cdc_init(&self.usbd_handle, &self.pcd_handle);
+	r = usb_cdc_init(&((struct cdc_init_data){
+		.p_usbd = &self.usbd_handle,
+		.p_pcd = &self.pcd_handle
+	}));
 	ERR_CHECK(r);
 
 	status = USBD_Start();

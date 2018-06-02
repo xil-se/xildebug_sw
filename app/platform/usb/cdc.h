@@ -1,6 +1,6 @@
 #pragma once
 
-#include "drivers/usb.h"
+#include "platform/usb/usb.h"
 #include "errors.h"
 
 #define EUSB_CDC_NO_INIT		(EUSB_CDC_BASE + 0)
@@ -17,4 +17,4 @@
 
 err_t usb_cdc_rx(struct usb_rx_queue_item *p_rx_queue_item, uint32_t timeout_ticks);
 err_t usb_cdc_tx(uint8_t *p_buf, uint16_t len);
-err_t usb_cdc_init(USBD_HandleTypeDef *p_usbd, PCD_HandleTypeDef *p_pcd);
+err_t usb_cdc_init(const void *p_data);

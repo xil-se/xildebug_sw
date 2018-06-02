@@ -2,6 +2,7 @@
 
 #include "platform/gpio.h"
 #include "platform/i2c.h"
+#include "hal_errors.h"
 
 static struct {
 	bool initialized;

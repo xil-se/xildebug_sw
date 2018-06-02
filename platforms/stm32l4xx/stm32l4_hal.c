@@ -1,6 +1,7 @@
-#include "stm32l4xx_hal.h"
 #include "FreeRTOS.h"
+#include "hal_errors.h"
 #include "platform/platform.h"
+#include "stm32l4xx_hal.h"
 #include "task.h"
 
 static TIM_HandleTypeDef tim_handle;

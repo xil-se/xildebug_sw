@@ -34,13 +34,6 @@ APP_SRCS := \
 	app/drivers/led.c \
 	app/drivers/max14662.c \
 	app/drivers/mcp4018t.c \
-	app/drivers/pcd.c \
-	app/drivers/uart.c \
-	app/drivers/usb.c \
-	app/drivers/usb/core.c \
-	app/drivers/usb/cdc.c \
-	app/drivers/usb/ctlreq.c \
-	app/drivers/usb/hid.c \
 	app/cdc_uart_bridge.c \
 	app/errorhandler.c \
 	app/freertos.c \

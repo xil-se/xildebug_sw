@@ -63,7 +63,7 @@ err_t max14662_set_value(enum MAX14662_address address, uint8_t val)
 		return EMAX14662_NO_INIT;
 
 	if (self.state[address] == val)
-		return HAL_OK;
+		return ERR_OK;
 
 	i2c_address = resolve_address(address);
 	r = i2c_master_tx(i2c_address << 1, data, sizeof(data), I2C_TIMEOUT_MS);
@@ -84,7 +84,7 @@ err_t max14662_set_bit(enum MAX14662_address address, enum MAX14662_bit bit, boo
 		return EMAX14662_NO_INIT;
 
 	if (masked_bit == value)
-		return HAL_OK;
+		return ERR_OK;
 
 	if (value)
 		new_value = self.state[address] | (1 << bit);
@@ -136,5 +136,5 @@ err_t max14662_init(enum MAX14662_address address)
 		return r;
 	}
 
-	return HAL_OK;
+	return ERR_OK;
 }
