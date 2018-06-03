@@ -44,7 +44,7 @@ PLATFORM_INCLUDES := \
 LDSCRIPT := scripts/ld/STM32F072C8Tx_FLASH.ld
 DEFS     += USE_HAL_DRIVER STM32F072xB
 
-CFLAGS  += -mcpu=cortex-m0 -mthumb
-LDFLAGS += -mcpu=cortex-m0 -mthumb -T$(LDSCRIPT)
+CFLAGS  += -mcpu=cortex-m0 -mthumb -mfloat-abi=soft
+LDFLAGS += -mcpu=cortex-m0 -mthumb -mfloat-abi=soft -T$(LDSCRIPT)
 
 OPENOCD_TARGET := stm32f0x
