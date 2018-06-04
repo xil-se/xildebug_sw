@@ -6,7 +6,7 @@ import time
 import struct
 
 # Create object serial port
-portName = "/dev/tty.usbmodem145121"                      # replace this port name by yours!
+portName = "/dev/tty.usbmodem145141"                      # replace this port name by yours!
 baudrate = 115200
 ser = serial.Serial(portName,baudrate)
 
@@ -37,6 +37,7 @@ def update():
     yarr = []
     t0 = time.time()
     for i in range(8): #read 8 * 64
+#    for i in range(1): #read 8 * 64
         values = bytearray(ser.read(64))
         if values[0] == 0x11 and values[1] == 0x22 and values[2] == 0x33 and values[3] == 0x44:
             pass
@@ -47,10 +48,10 @@ def update():
                     ser.read(60)
                     return
                 print "loop..."
-        yarr.extend(list(struct.unpack(">" + N*"H", values[4:])))
+        yarr.extend(list(struct.unpack("<" + N*"H", values[4:])))
     
     NN = len(yarr)
-    print NN / (time.time() - t0)
+    #print NN / (time.time() - t0)
 
     #return
     Xm[:-NN] = Xm[NN:]                      # shift data in the temporal mean 1 sample left
