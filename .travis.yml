@@ -1,11 +1,12 @@
-sudo: required
 dist: trusty
 language: c
 compiler:
   - gcc
 
 before_script:
-  - wget https://allg.one/B0OY -O gcc-arm-embedded_7-2017q4-1~trusty3_amd64.deb && sudo dpkg -i gcc-arm-embedded_7-2017q4-1~trusty3_amd64.deb
+  - echo $PWD
+  - wget https://allg.one/gXwe -O gcc-arm-none-eabi-7-2017-q4-major-linux.tar.bz2 && tar xjf gcc-arm-none-eabi-7-2017-q4-major-linux.tar.bz2
+  - export PATH=$PATH:$PWD/gcc-arm-none-eabi-7-2017-q4-major/bin
   - arm-none-eabi-gcc --version
   - make --version
   - nproc
