@@ -10,7 +10,7 @@
 #include "usb/ctlreq.h"
 #include "usb/hid_internal.h"
 
-#define MODULE_NAME				STM32F0XX_USB
+#define MODULE_NAME				stm32f0xx_usb
 #include "macros.h"
 
 static struct {

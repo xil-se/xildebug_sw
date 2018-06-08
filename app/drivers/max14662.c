@@ -1,7 +1,7 @@
 #include "drivers/max14662.h"
 #include "platform/i2c.h"
 
-#define MODULE_NAME				MAX14662
+#define MODULE_NAME				max14662
 #include "macros.h"
 
 #define MAX14662_ADDRESS_0_0	0x4C

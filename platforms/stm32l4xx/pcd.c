@@ -6,7 +6,7 @@
 #include "usb/core.h"
 #include "usb/ctlreq.h"
 
-#define MODULE_NAME				PCD
+#define MODULE_NAME				pcd
 #include "macros.h"
 
 static struct {

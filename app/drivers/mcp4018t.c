@@ -3,7 +3,7 @@
 #include "drivers/mcp4018t.h"
 #include "platform/i2c.h"
 
-#define MODULE_NAME			MCP4018T
+#define MODULE_NAME			mcp4018t
 #include "macros.h"
 
 #define MCP4018T_ADDRESS	0x2F

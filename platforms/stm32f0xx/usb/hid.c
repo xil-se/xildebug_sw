@@ -11,7 +11,7 @@
 #include "stm32f0xx_hal.h"
 #include "hid_internal.h"
 
-#define MODULE_NAME		USB_HID
+#define MODULE_NAME		usb_hid
 #include "macros.h"
 
 #define CLASS_IDX		0

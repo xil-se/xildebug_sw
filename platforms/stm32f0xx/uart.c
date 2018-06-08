@@ -11,7 +11,7 @@
 #include "stm32f0xx_hal.h"
 #include "stm32f0xx_ll_dma.h"
 
-#define MODULE_NAME				UART
+#define MODULE_NAME				uart
 #include "macros.h"
 
 static struct {

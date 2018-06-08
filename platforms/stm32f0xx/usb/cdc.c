@@ -12,7 +12,7 @@
 #include "stm32f0xx_hal.h"
 #include "cdc_internal.h"
 
-#define MODULE_NAME		USB_CDC
+#define MODULE_NAME		usb_cdc
 #include "macros.h"
 
 #define CLASS_IDX		1

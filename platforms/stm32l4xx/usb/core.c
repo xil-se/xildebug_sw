@@ -28,7 +28,7 @@
 #include "stm32l4xx_hal.h"
 #include "usb/core.h"
 
-#define MODULE_NAME				USB_CORE
+#define MODULE_NAME				usb_core
 #include "macros.h"
 
 static struct {

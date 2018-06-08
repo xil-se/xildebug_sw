@@ -4,7 +4,7 @@
 #include "platform/gpio.h"
 #include "platform/i2c.h"
 
-#define MODULE_NAME				I2C
+#define MODULE_NAME				i2c
 #include "macros.h"
 
 static struct {

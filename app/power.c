@@ -7,7 +7,7 @@
 #include "platform/gpio.h"
 #include "power.h"
 
-#define MODULE_NAME				POWER
+#define MODULE_NAME				power
 #include "macros.h"
 
 #define POWER_TASK_STACK_SIZE	128

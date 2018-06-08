@@ -9,7 +9,7 @@
 #include "platform/uart.h"
 #include "platform/usb/cdc.h"
 
-#define MODULE_NAME				CDC_UART_BRIDGE
+#define MODULE_NAME				cdc_uart_bridge
 #include "macros.h"
 
 #define RX_TASK_STACK_SIZE		128
