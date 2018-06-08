@@ -9,11 +9,11 @@
 #include "platform/uart.h"
 #include "platform/usb/cdc.h"
 
-#define RX_TASK_STACK_SIZE		512
+#define RX_TASK_STACK_SIZE		128
 #define RX_TASK_NAME			"CDCrx"
 #define RX_TASK_PRIORITY		1
 
-#define TX_TASK_STACK_SIZE		512
+#define TX_TASK_STACK_SIZE		128
 #define TX_TASK_NAME			"CDCtx"
 #define TX_TASK_PRIORITY		1
 

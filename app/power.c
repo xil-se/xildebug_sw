@@ -7,7 +7,7 @@
 #include "platform/gpio.h"
 #include "power.h"
 
-#define POWER_TASK_STACK_SIZE	512
+#define POWER_TASK_STACK_SIZE	128
 #define POWER_TASK_NAME			"Power"
 #define POWER_TASK_PRIORITY		1
 
