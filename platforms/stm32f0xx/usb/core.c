@@ -28,9 +28,12 @@
 #include "usb/core.h"
 #include "stm32f0xx_hal.h"
 
+#define MODULE_NAME				USB_CORE
+#include "macros.h"
+
 static struct {
 	PCD_HandleTypeDef *p_pcd;
-} self;
+} SELF;
 
 HAL_StatusTypeDef USBD_Init(USBD_HandleTypeDef *p_dev, PCD_HandleTypeDef *p_pcd, USBD_DescriptorsTypeDef *p_desc)
 {
@@ -40,16 +43,16 @@ HAL_StatusTypeDef USBD_Init(USBD_HandleTypeDef *p_dev, PCD_HandleTypeDef *p_pcd,
 	p_dev->pDesc = p_desc;
 	p_dev->dev_state = USBD_STATE_DEFAULT;
 
-	self.p_pcd = p_pcd;
-	self.p_pcd->Instance = USB;
-	self.p_pcd->Init.dev_endpoints = USBD_MAX_NUM_ENDPOINTS;
-	self.p_pcd->Init.speed = PCD_SPEED_FULL;
-	self.p_pcd->Init.ep0_mps = DEP0CTL_MPS_64;
-	self.p_pcd->Init.phy_itface = PCD_PHY_EMBEDDED;
-	self.p_pcd->Init.Sof_enable = DISABLE;
-	self.p_pcd->Init.low_power_enable = DISABLE;
-	self.p_pcd->Init.lpm_enable = DISABLE;
-	self.p_pcd->Init.battery_charging_enable = DISABLE;
+	SELF.p_pcd = p_pcd;
+	SELF.p_pcd->Instance = USB;
+	SELF.p_pcd->Init.dev_endpoints = USBD_MAX_NUM_ENDPOINTS;
+	SELF.p_pcd->Init.speed = PCD_SPEED_FULL;
+	SELF.p_pcd->Init.ep0_mps = DEP0CTL_MPS_64;
+	SELF.p_pcd->Init.phy_itface = PCD_PHY_EMBEDDED;
+	SELF.p_pcd->Init.Sof_enable = DISABLE;
+	SELF.p_pcd->Init.low_power_enable = DISABLE;
+	SELF.p_pcd->Init.lpm_enable = DISABLE;
+	SELF.p_pcd->Init.battery_charging_enable = DISABLE;
 
 	if (HAL_PCD_Init(p_pcd) != HAL_OK)
 		return HAL_ERROR;
@@ -67,7 +70,7 @@ HAL_StatusTypeDef USBD_DeInit(USBD_HandleTypeDef *p_dev)
 
 	USBD_Stop(p_dev);
 
-	return HAL_PCD_DeInit(self.p_pcd);
+	return HAL_PCD_DeInit(SELF.p_pcd);
 }
 
 HAL_StatusTypeDef USBD_RegisterClass(USBD_HandleTypeDef *p_dev, uint8_t idx, USBD_ClassTypeDef *p_class)
@@ -83,7 +86,7 @@ HAL_StatusTypeDef USBD_RegisterClass(USBD_HandleTypeDef *p_dev, uint8_t idx, USB
 
 HAL_StatusTypeDef USBD_Start(void)
 {
-	return HAL_PCD_Start(self.p_pcd);
+	return HAL_PCD_Start(SELF.p_pcd);
 }
 
 HAL_StatusTypeDef USBD_Stop(USBD_HandleTypeDef *p_dev)
@@ -92,7 +95,7 @@ HAL_StatusTypeDef USBD_Stop(USBD_HandleTypeDef *p_dev)
 	for (int i = 0; i < USBD_MAX_NUM_CLASSES; ++i)
 		p_dev->pClasses[i]->DeInit(p_dev, p_dev->dev_config);
 
-	return HAL_PCD_Stop(self.p_pcd);
+	return HAL_PCD_Stop(SELF.p_pcd);
 }
 
 HAL_StatusTypeDef USBD_SetClassConfig(USBD_HandleTypeDef *p_dev, uint8_t idx, uint8_t cfgidx)
@@ -121,7 +124,7 @@ HAL_StatusTypeDef USBD_CtlSendData(USBD_HandleTypeDef *p_dev, uint8_t *p_buf, ui
 	p_dev->ep_in[0].rem_length   = len;
 
 	/* Start the transfer */
-	return HAL_PCD_EP_Transmit(self.p_pcd, 0x00, p_buf, len);
+	return HAL_PCD_EP_Transmit(SELF.p_pcd, 0x00, p_buf, len);
 }
 
 HAL_StatusTypeDef USBD_CtlPrepareRx(USBD_HandleTypeDef *p_dev, uint8_t *p_buf, uint16_t len)
@@ -132,7 +135,7 @@ HAL_StatusTypeDef USBD_CtlPrepareRx(USBD_HandleTypeDef *p_dev, uint8_t *p_buf, u
 	p_dev->ep_out[0].rem_length   = len;
 
 	/* Start the transfer */
-	return HAL_PCD_EP_Receive(self.p_pcd, 0x00, p_buf, len);
+	return HAL_PCD_EP_Receive(SELF.p_pcd, 0x00, p_buf, len);
 }
 
 HAL_StatusTypeDef USBD_CtlSendStatus(USBD_HandleTypeDef *p_dev)
@@ -141,13 +144,13 @@ HAL_StatusTypeDef USBD_CtlSendStatus(USBD_HandleTypeDef *p_dev)
 	p_dev->ep0_state = USBD_EP0_STATUS_IN;
 
 	/* Start the transfer */
-	return HAL_PCD_EP_Transmit(self.p_pcd, 0x00, NULL, 0);
+	return HAL_PCD_EP_Transmit(SELF.p_pcd, 0x00, NULL, 0);
 }
 
 uint8_t USBD_LL_IsStallEP(USBD_HandleTypeDef *p_dev, uint8_t ep_addr)
 {
 	if((ep_addr & 0x80) == 0x80)
-		return self.p_pcd->IN_ep[ep_addr & 0x7F].is_stall;
+		return SELF.p_pcd->IN_ep[ep_addr & 0x7F].is_stall;
 
-	return self.p_pcd->OUT_ep[ep_addr & 0x7F].is_stall;
+	return SELF.p_pcd->OUT_ep[ep_addr & 0x7F].is_stall;
 }

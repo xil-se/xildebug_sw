@@ -9,6 +9,9 @@
 #include "platform/uart.h"
 #include "platform/usb/cdc.h"
 
+#define MODULE_NAME				CDC_UART_BRIDGE
+#include "macros.h"
+
 #define RX_TASK_STACK_SIZE		128
 #define RX_TASK_NAME			"CDCrx"
 #define RX_TASK_PRIORITY		1
@@ -43,7 +46,7 @@ static struct {
 	StaticTimer_t rx_led_timer_storage;
 	TimerHandle_t tx_led_timer;
 	StaticTimer_t tx_led_timer_storage;
-} self;
+} SELF;
 
 static void rx_task(void *p_arg)
 {
@@ -61,7 +64,7 @@ static void rx_task(void *p_arg)
 		switch (r) {
 		case ERR_OK:
 			led_tx_set(true);
-			xTimerReset(self.tx_led_timer, 0);
+			xTimerReset(SELF.tx_led_timer, 0);
 		case EUART_DISABLED:
 			break;
 		default:
@@ -79,13 +82,13 @@ static void tx_task(void *p_arg)
 		/* uart_start_rx starts a continuous DMA transfer of 64 bytes that sends its data to our 
 		 * queue that we receive here. In order to get shorter messages in near realtime we need
 		 * a timeout and flush the received bytes so far. */
-		if (xQueueReceive(self.tx_queue_handle, &item, pdMS_TO_TICKS(UART_RX_TIMEOUT_MS)) == pdFALSE) {
+		if (xQueueReceive(SELF.tx_queue_handle, &item, pdMS_TO_TICKS(UART_RX_TIMEOUT_MS)) == pdFALSE) {
 			uart_flush_rx();
 			continue;
 		}
 
 		led_rx_set(true);
-		xTimerReset(self.rx_led_timer, 0);
+		xTimerReset(SELF.rx_led_timer, 0);
 
 		r = usb_cdc_tx(item.data, item.len);
 		if (r != ERR_OK && r != EUSB_CDC_NOT_READY)
@@ -96,9 +99,9 @@ static void tx_task(void *p_arg)
 
 static void timer_callback(TimerHandle_t timer_handle)
 {
-	if (timer_handle == self.tx_led_timer) {
+	if (timer_handle == SELF.tx_led_timer) {
 		led_tx_set(false);
-	} else if (timer_handle == self.rx_led_timer) {
+	} else if (timer_handle == SELF.rx_led_timer) {
 		led_rx_set(false);
 	}
 }
@@ -107,59 +110,59 @@ err_t cdc_uart_bridge_init(void)
 {
 	err_t r = ERR_OK;
 
-	if (self.initialized)
+	if (SELF.initialized)
 		return ERR_OK;
 
-	self.rx_task_handle = xTaskCreateStatic(
+	SELF.rx_task_handle = xTaskCreateStatic(
 		rx_task,
 		RX_TASK_NAME,
 		RX_TASK_STACK_SIZE,
 		NULL,
 		RX_TASK_PRIORITY,
-		&self.rx_task_stack[0],
-		&self.rx_task_tcb);
-	if (self.rx_task_handle == NULL)
+		&SELF.rx_task_stack[0],
+		&SELF.rx_task_tcb);
+	if (SELF.rx_task_handle == NULL)
 		return ECDC_UART_BRIDGE_TASK_CREATE;
 
-	self.tx_task_handle = xTaskCreateStatic(
+	SELF.tx_task_handle = xTaskCreateStatic(
 		tx_task,
 		TX_TASK_NAME,
 		TX_TASK_STACK_SIZE,
 		NULL,
 		TX_TASK_PRIORITY,
-		&self.tx_task_stack[0],
-		&self.tx_task_tcb);
-	if (self.tx_task_handle == NULL)
+		&SELF.tx_task_stack[0],
+		&SELF.tx_task_tcb);
+	if (SELF.tx_task_handle == NULL)
 		return ECDC_UART_BRIDGE_TASK_CREATE;
 
-	self.tx_queue_handle = xQueueCreateStatic(QUEUE_LENGTH,
+	SELF.tx_queue_handle = xQueueCreateStatic(QUEUE_LENGTH,
 		QUEUE_ITEM_SIZE,
-		self.tx_queue_storage,
-		&self.tx_queue);
+		SELF.tx_queue_storage,
+		&SELF.tx_queue);
 
-	self.tx_led_timer = xTimerCreateStatic(
+	SELF.tx_led_timer = xTimerCreateStatic(
 		"tx_led",
 		pdMS_TO_TICKS(LED_TIMEOUT_MS),
 		pdFALSE,
 		( void * ) 0,
 		timer_callback,
-		&self.tx_led_timer_storage);
+		&SELF.tx_led_timer_storage);
 
-	self.rx_led_timer = xTimerCreateStatic(
+	SELF.rx_led_timer = xTimerCreateStatic(
 		"rx_led",
 		pdMS_TO_TICKS(LED_TIMEOUT_MS),
 		pdFALSE,
 		( void * ) 0,
 		timer_callback,
-		&self.rx_led_timer_storage);
+		&SELF.rx_led_timer_storage);
 
 	r = uart_enable();
 	ERR_CHECK(r);
 
-	r = uart_start_rx(self.tx_queue_handle);
+	r = uart_start_rx(SELF.tx_queue_handle);
 	ERR_CHECK(r);
 
-	self.initialized = true;
+	SELF.initialized = true;
 
 	return r;
 }
