@@ -18,7 +18,7 @@
 #include "platform/gpio.h"
 #include "target.h"
 
-#define MAIN_TASK_STACK_SIZE	512
+#define MAIN_TASK_STACK_SIZE	256
 #define MAIN_TASK_NAME			"Main"
 #define MAIN_TASK_PRIORITY		1
 
