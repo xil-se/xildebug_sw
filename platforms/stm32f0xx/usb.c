@@ -5,17 +5,20 @@
 #include "platform/usb/cdc.h"
 #include "platform/usb/hid.h"
 #include "platform/usb/usb.h"
+#include "usb/cdc_internal.h"
 #include "usb/core.h"
 #include "usb/ctlreq.h"
-#include "usb/cdc_internal.h"
 #include "usb/hid_internal.h"
+
+#define MODULE_NAME				stm32f0xx_usb
+#include "macros.h"
 
 static struct {
 	bool initialized;
 	USBD_HandleTypeDef usbd_handle;
 	PCD_HandleTypeDef pcd_handle;
 	char usb_serialnumber_string[17];
-} self;
+} SELF;
 
 static uint8_t *usb_desc_device(USBD_SpeedTypeDef speed, uint16_t *p_len);
 static uint8_t *usb_desc_langid(USBD_SpeedTypeDef speed, uint16_t *p_len);
@@ -306,7 +309,7 @@ static uint8_t *usb_desc_usr_str(USBD_HandleTypeDef *p_dev, uint8_t idx, uint16_
 		break;
 
 	case USBD_IDX_SERIAL_STR:
-		USBD_GetString((uint8_t *)self.usb_serialnumber_string, desc_str_buf, p_len);
+		USBD_GetString((uint8_t *)SELF.usb_serialnumber_string, desc_str_buf, p_len);
 		break;
 
 	case USBD_USER_STRING_CDC_IDX:
@@ -330,7 +333,7 @@ static uint8_t *usb_desc_usr_str(USBD_HandleTypeDef *p_dev, uint8_t idx, uint16_
 
 void USB_IRQHandler(void)
 {
-	HAL_PCD_IRQHandler(&self.pcd_handle);
+	HAL_PCD_IRQHandler(&SELF.pcd_handle);
 }
 
 err_t usb_init(void)
@@ -338,33 +341,33 @@ err_t usb_init(void)
 	HAL_StatusTypeDef status;
 	err_t r;
 
-	if (self.initialized)
+	if (SELF.initialized)
 		return ERR_OK;
 
-	sprintf(self.usb_serialnumber_string, "%08lx%08lx", HAL_GetUIDw0() + HAL_GetUIDw2(), HAL_GetUIDw1());
+	sprintf(SELF.usb_serialnumber_string, "%08lx%08lx", HAL_GetUIDw0() + HAL_GetUIDw2(), HAL_GetUIDw1());
 
-	r = pcd_init(&self.usbd_handle);
+	r = pcd_init(&SELF.usbd_handle);
 	ERR_CHECK(r);
 
-	status = USBD_Init(&self.usbd_handle, &self.pcd_handle, &desc_funcs);
+	status = USBD_Init(&SELF.usbd_handle, &SELF.pcd_handle, &desc_funcs);
 	HAL_ERR_CHECK(status, EUSB_USBD_INIT);
 
 	r = usb_hid_init(&((struct hid_init_data){
-		.p_usbd = &self.usbd_handle,
-		.p_pcd = &self.pcd_handle
+		.p_usbd = &SELF.usbd_handle,
+		.p_pcd = &SELF.pcd_handle
 	}));
 	ERR_CHECK(r);
 
 	r = usb_cdc_init(&((struct cdc_init_data){
-		.p_usbd = &self.usbd_handle,
-		.p_pcd = &self.pcd_handle
+		.p_usbd = &SELF.usbd_handle,
+		.p_pcd = &SELF.pcd_handle
 	}));
 	ERR_CHECK(r);
 
 	status = USBD_Start();
 	HAL_ERR_CHECK(status, EUSB_USBD_START);
 
-	self.initialized = true;
+	SELF.initialized = true;
 
 	return ERR_OK;
 }

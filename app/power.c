@@ -7,6 +7,9 @@
 #include "platform/gpio.h"
 #include "power.h"
 
+#define MODULE_NAME				power
+#include "macros.h"
+
 #define POWER_TASK_STACK_SIZE	128
 #define POWER_TASK_NAME			"Power"
 #define POWER_TASK_PRIORITY		1
@@ -34,7 +37,7 @@ static struct {
 	/* TODO: Add support to configure these calibration values */
 	uint32_t calib_min_mv;
 	uint32_t calib_max_mv;
-} self;
+} SELF;
 
 /*
 TODO: Uncomment when we need them
@@ -64,13 +67,13 @@ static float calib_shunt_11 = 512.2f;
 static void shunt1_set_enabled(bool enabled)
 {
 	gpio_write(SHUNT1_EN_GPIO_Port, SHUNT1_EN_Pin, !enabled);
-	self.shunt1_enabled = enabled;
+	SELF.shunt1_enabled = enabled;
 }
 
 static void shunt2_set_enabled(bool enabled)
 {
 	gpio_write(SHUNT2_EN_GPIO_Port, SHUNT2_EN_Pin, !enabled);
-	self.shunt2_enabled = enabled;
+	SELF.shunt2_enabled = enabled;
 }
 
 static void power_task(void *p_arg)
@@ -78,7 +81,7 @@ static void power_task(void *p_arg)
 	uint16_t adc_values[NUM_OF_ADC_CHANNELS];
 
 	for (;;) {
-		xQueueReceive(self.queue_handle, adc_values, portMAX_DELAY);
+		xQueueReceive(SELF.queue_handle, adc_values, portMAX_DELAY);
 
 		/* TODO: Do stuff with the values */
 	}
@@ -88,25 +91,25 @@ static void adc_conversion_ready_handler(const uint16_t adc_values[NUM_OF_ADC_CH
 {
 	BaseType_t higher_priority_task_woken = pdFALSE;
 
-	xQueueSendFromISR(self.queue_handle, adc_values, &higher_priority_task_woken);
+	xQueueSendFromISR(SELF.queue_handle, adc_values, &higher_priority_task_woken);
 	portYIELD_FROM_ISR(higher_priority_task_woken);
 }
 
 void power_dut_set_enabled(bool enabled)
 {
 	gpio_write(DUT_VDD_EN_GPIO_Port, DUT_VDD_EN_Pin, !enabled);
-	self.dut_vdd_enabled = enabled;
+	SELF.dut_vdd_enabled = enabled;
 }
 
 err_t power_dut_get_enabled(bool *p_enabled)
 {
-	if (!self.initialized)
+	if (!SELF.initialized)
 		return EPOWER_NO_INIT;
 
 	if (!p_enabled)
 		return EPOWER_INVALID_ARG;
 
-	*p_enabled = self.dut_vdd_enabled;
+	*p_enabled = SELF.dut_vdd_enabled;
 
 	return ERR_OK;
 }
@@ -115,34 +118,34 @@ err_t power_dut_ldo_set(uint32_t millivolt)
 {
 	err_t r;
 
-	if (!self.initialized)
+	if (!SELF.initialized)
 		return EPOWER_NO_INIT;
 
-	if (millivolt < self.calib_min_mv)
-		millivolt = self.calib_min_mv;
-	else if(millivolt > self.calib_max_mv)
-		millivolt = self.calib_max_mv;
+	if (millivolt < SELF.calib_min_mv)
+		millivolt = SELF.calib_min_mv;
+	else if(millivolt > SELF.calib_max_mv)
+		millivolt = SELF.calib_max_mv;
 
-	const float factor = (self.calib_max_mv - ((float)millivolt)) / (self.calib_max_mv - self.calib_min_mv);
+	const float factor = (SELF.calib_max_mv - ((float)millivolt)) / (SELF.calib_max_mv - SELF.calib_min_mv);
 	const uint8_t value = (uint8_t) (factor * 127 - 0.5f);
 
 	r = mcp4018t_set_value(value);
 	ERR_CHECK(r);
 
-	self.ldo_voltage = millivolt;
+	SELF.ldo_voltage = millivolt;
 
 	return r;
 }
 
 err_t power_dut_ldo_get(uint32_t *p_millivolt)
 {
-	if (!self.initialized)
+	if (!SELF.initialized)
 		return EPOWER_NO_INIT;
 
 	if (!p_millivolt)
 		return EPOWER_INVALID_ARG;
 
-	*p_millivolt = self.ldo_voltage;
+	*p_millivolt = SELF.ldo_voltage;
 
 	return ERR_OK;
 }
@@ -151,22 +154,22 @@ err_t power_init(void)
 {
 	err_t r;
 
-	if (self.initialized)
+	if (SELF.initialized)
 		return ERR_OK;
 
-	self.task_handle = xTaskCreateStatic(
+	SELF.task_handle = xTaskCreateStatic(
 		power_task,
 		POWER_TASK_NAME,
 		POWER_TASK_STACK_SIZE,
 		NULL,
 		POWER_TASK_PRIORITY,
-		&self.task_stack[0],
-		&self.task_tcb);
-	if (self.task_handle == NULL)
+		&SELF.task_stack[0],
+		&SELF.task_tcb);
+	if (SELF.task_handle == NULL)
 		return EPOWER_TASK_CREATE;
 
-	self.queue_handle = xQueueCreateStatic(QUEUE_LENGTH, QUEUE_ITEM_SIZE, self.queue_storage, &self.queue);
-	if (self.queue_handle == NULL)
+	SELF.queue_handle = xQueueCreateStatic(QUEUE_LENGTH, QUEUE_ITEM_SIZE, SELF.queue_storage, &SELF.queue);
+	if (SELF.queue_handle == NULL)
 		return EPOWER_QUEUE_CREATE;
 
 	adc_set_callback(adc_conversion_ready_handler);
@@ -177,15 +180,15 @@ err_t power_init(void)
 	shunt1_set_enabled(true);
 	shunt2_set_enabled(true);
 
-	self.calib_min_mv = DEFAULT_CALIB_MIN_MV;
-	self.calib_max_mv = DEFAULT_CALIB_MAX_MV;
+	SELF.calib_min_mv = DEFAULT_CALIB_MIN_MV;
+	SELF.calib_max_mv = DEFAULT_CALIB_MAX_MV;
 
-	self.initialized = true;
+	SELF.initialized = true;
 
 	/* TODO: Might want to keep this in persistent ram and/or flash so we can
 	 * resume with the previous values after a cold boot.
 	 */
-	power_dut_ldo_set(self.calib_min_mv);
+	power_dut_ldo_set(SELF.calib_min_mv);
 
 	return ERR_OK;
 }

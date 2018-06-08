@@ -12,6 +12,9 @@
 #include "stm32f0xx_hal.h"
 #include "cdc_internal.h"
 
+#define MODULE_NAME		usb_cdc
+#include "macros.h"
+
 #define CLASS_IDX		1
 #define QUEUE_LENGTH	10
 #define QUEUE_ITEM_SIZE	sizeof(struct usb_rx_queue_item)
@@ -30,7 +33,7 @@ static struct {
 	uint8_t rx_queue_storage[QUEUE_LENGTH * QUEUE_ITEM_SIZE];
 	SemaphoreHandle_t tx_done_semaphore;
 	StaticSemaphore_t tx_done_semaphore_buffer;
-} self;
+} SELF;
 
 static uint8_t cdc_init(USBD_HandleTypeDef *p_dev, uint8_t cfgidx);
 static uint8_t cdc_deinit(USBD_HandleTypeDef *p_dev, uint8_t cfgidx);
@@ -113,20 +116,20 @@ static void cdc_ctrl(uint8_t cmd, uint8_t *p_buf, uint16_t len)
 
 static uint8_t cdc_init(USBD_HandleTypeDef *p_dev, uint8_t cfgidx)
 {
-	HAL_PCD_EP_Open(self.p_pcd, CDC_IN_EP, USB_FS_MAX_PACKET_SIZE, USBD_EP_TYPE_BULK);
-	HAL_PCD_EP_Open(self.p_pcd, CDC_OUT_EP, USB_FS_MAX_PACKET_SIZE, USBD_EP_TYPE_BULK);
-	HAL_PCD_EP_Open(self.p_pcd, CDC_CMD_EP, USB_FS_MAX_PACKET_SIZE, USBD_EP_TYPE_INTR);
+	HAL_PCD_EP_Open(SELF.p_pcd, CDC_IN_EP, USB_FS_MAX_PACKET_SIZE, USBD_EP_TYPE_BULK);
+	HAL_PCD_EP_Open(SELF.p_pcd, CDC_OUT_EP, USB_FS_MAX_PACKET_SIZE, USBD_EP_TYPE_BULK);
+	HAL_PCD_EP_Open(SELF.p_pcd, CDC_CMD_EP, USB_FS_MAX_PACKET_SIZE, USBD_EP_TYPE_INTR);
 
-	HAL_PCD_EP_Receive(self.p_pcd, CDC_OUT_EP, self.rx_buf.data, USB_FS_MAX_PACKET_SIZE);
+	HAL_PCD_EP_Receive(SELF.p_pcd, CDC_OUT_EP, SELF.rx_buf.data, USB_FS_MAX_PACKET_SIZE);
 
 	return HAL_OK;
 }
 
 static uint8_t cdc_deinit(USBD_HandleTypeDef *p_dev, uint8_t cfgidx)
 {
-	HAL_PCD_EP_Close(self.p_pcd, CDC_IN_EP);
-	HAL_PCD_EP_Close(self.p_pcd, CDC_OUT_EP);
-	HAL_PCD_EP_Close(self.p_pcd, CDC_CMD_EP);
+	HAL_PCD_EP_Close(SELF.p_pcd, CDC_IN_EP);
+	HAL_PCD_EP_Close(SELF.p_pcd, CDC_OUT_EP);
+	HAL_PCD_EP_Close(SELF.p_pcd, CDC_CMD_EP);
 
 	return HAL_OK;
 }
@@ -139,13 +142,13 @@ static uint8_t cdc_setup(USBD_HandleTypeDef *p_dev, USBD_SetupReqTypedef *p_req)
 				(p_req->wIndex == USB_CDC_CTRL_INTERFACE_NO)) {
 			if (p_req->wLength) {
 				if (p_req->bmRequest.dir) {
-					cdc_ctrl(p_req->bRequest, (uint8_t *)self.ctrl_buf, p_req->wLength);
-					USBD_CtlSendData(p_dev, (uint8_t *)self.ctrl_buf, p_req->wLength);
+					cdc_ctrl(p_req->bRequest, (uint8_t *)SELF.ctrl_buf, p_req->wLength);
+					USBD_CtlSendData(p_dev, (uint8_t *)SELF.ctrl_buf, p_req->wLength);
 				} else {
-					self.ctrl_op_code = p_req->bRequest;
-					self.ctrl_len = p_req->wLength;
+					SELF.ctrl_op_code = p_req->bRequest;
+					SELF.ctrl_len = p_req->wLength;
 
-					USBD_CtlPrepareRx(p_dev, (uint8_t *)self.ctrl_buf, p_req->wLength);
+					USBD_CtlPrepareRx(p_dev, (uint8_t *)SELF.ctrl_buf, p_req->wLength);
 				}
 			} else {
 				cdc_ctrl(p_req->bRequest, (uint8_t *)p_req, 0);
@@ -156,11 +159,11 @@ static uint8_t cdc_setup(USBD_HandleTypeDef *p_dev, USBD_SetupReqTypedef *p_req)
 	case USB_REQ_TYPE_STANDARD:
 		switch (p_req->bRequest) {
 		case USB_REQ_GET_INTERFACE:
-			USBD_CtlSendData(p_dev, &self.alt_interface, 1);
+			USBD_CtlSendData(p_dev, &SELF.alt_interface, 1);
 			break;
 
 		case USB_REQ_SET_INTERFACE:
-			self.alt_interface = p_req->wValue;
+			SELF.alt_interface = p_req->wValue;
 			break;
 		}
 
@@ -178,7 +181,7 @@ static uint8_t cdc_data_in(USBD_HandleTypeDef *p_dev, uint8_t epnum)
 	if (epnum != CDC_IN_EP)
 		return HAL_OK;
 
-	xSemaphoreGiveFromISR(self.tx_done_semaphore, &xHigherPriorityTaskWoken);
+	xSemaphoreGiveFromISR(SELF.tx_done_semaphore, &xHigherPriorityTaskWoken);
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 
 	return HAL_OK;
@@ -192,10 +195,10 @@ static uint8_t cdc_data_out(USBD_HandleTypeDef *p_dev, uint8_t epnum)
 	if (epnum != CDC_OUT_EP)
 		return HAL_OK;
 
-	self.rx_buf.len = HAL_PCD_EP_GetRxCount(self.p_pcd, epnum);
-	status = HAL_PCD_EP_Receive(self.p_pcd, CDC_OUT_EP, self.rx_buf.data, USB_FS_MAX_PACKET_SIZE);
+	SELF.rx_buf.len = HAL_PCD_EP_GetRxCount(SELF.p_pcd, epnum);
+	status = HAL_PCD_EP_Receive(SELF.p_pcd, CDC_OUT_EP, SELF.rx_buf.data, USB_FS_MAX_PACKET_SIZE);
  
-	xQueueSendFromISR(self.rx_queue_handle, &self.rx_buf, &xHigherPriorityTaskWoken);
+	xQueueSendFromISR(SELF.rx_queue_handle, &SELF.rx_buf, &xHigherPriorityTaskWoken);
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 
 	return status;
@@ -203,25 +206,25 @@ static uint8_t cdc_data_out(USBD_HandleTypeDef *p_dev, uint8_t epnum)
 
 static uint8_t cdc_ep0_rx_ready(USBD_HandleTypeDef *p_dev)
 {
-	if (self.ctrl_op_code == 0xFF)
+	if (SELF.ctrl_op_code == 0xFF)
 		return HAL_OK;
 
-	cdc_ctrl(self.ctrl_op_code, (uint8_t *)self.ctrl_buf, self.ctrl_len);
+	cdc_ctrl(SELF.ctrl_op_code, (uint8_t *)SELF.ctrl_buf, SELF.ctrl_len);
 
-	self.ctrl_op_code = 0xFF;
+	SELF.ctrl_op_code = 0xFF;
 
 	return HAL_OK;
 }
 
 err_t usb_cdc_rx(struct usb_rx_queue_item *p_rx_queue_item, uint32_t timeout_ticks)
 {
-	if (!self.initialized)
+	if (!SELF.initialized)
 		return EUSB_CDC_NO_INIT;
 
 	if (!p_rx_queue_item)
 		return EUSB_CDC_INVALID_ARG;
 
-	if (xQueueReceive(self.rx_queue_handle, p_rx_queue_item, timeout_ticks) == pdFALSE)
+	if (xQueueReceive(SELF.rx_queue_handle, p_rx_queue_item, timeout_ticks) == pdFALSE)
 		return EUSB_CDC_RX_TIMEOUT;
 
 	return ERR_OK;
@@ -231,15 +234,15 @@ err_t usb_cdc_tx(uint8_t *p_buf, uint16_t len)
 {
 	HAL_StatusTypeDef status;
 
-	if (!self.initialized)
+	if (!SELF.initialized)
 		return EUSB_CDC_NO_INIT;
 
-	if (self.p_usbd->dev_state != USBD_STATE_CONFIGURED)
+	if (SELF.p_usbd->dev_state != USBD_STATE_CONFIGURED)
 		return EUSB_CDC_NOT_READY;
 
-	xSemaphoreTake(self.tx_done_semaphore, portMAX_DELAY);
+	xSemaphoreTake(SELF.tx_done_semaphore, portMAX_DELAY);
 
-	status = HAL_PCD_EP_Transmit(self.p_pcd, CDC_IN_EP, p_buf, len);
+	status = HAL_PCD_EP_Transmit(SELF.p_pcd, CDC_IN_EP, p_buf, len);
 	HAL_ERR_CHECK(status, EUSB_CDC_TRANSMIT);
 
 	return ERR_OK;
@@ -249,29 +252,29 @@ err_t usb_cdc_init(const struct cdc_init_data *p_data)
 {
 	HAL_StatusTypeDef status;
 
-	if (self.initialized)
+	if (SELF.initialized)
 		return ERR_OK;
 
-	self.p_usbd = p_data->p_usbd;
-	self.p_pcd = p_data->p_pcd;
+	SELF.p_usbd = p_data->p_usbd;
+	SELF.p_pcd = p_data->p_pcd;
 
-	HAL_PCDEx_PMAConfig(self.p_pcd, CDC_CMD_EP, PCD_SNG_BUF, USB_PMA_BASE + 2 * USB_FS_MAX_PACKET_SIZE);
+	HAL_PCDEx_PMAConfig(SELF.p_pcd, CDC_CMD_EP, PCD_SNG_BUF, USB_PMA_BASE + 2 * USB_FS_MAX_PACKET_SIZE);
 
-	HAL_PCDEx_PMAConfig(self.p_pcd, CDC_IN_EP,  PCD_SNG_BUF, USB_PMA_BASE + 4 * USB_FS_MAX_PACKET_SIZE);
-	HAL_PCDEx_PMAConfig(self.p_pcd, CDC_OUT_EP, PCD_SNG_BUF, USB_PMA_BASE + 5 * USB_FS_MAX_PACKET_SIZE);
+	HAL_PCDEx_PMAConfig(SELF.p_pcd, CDC_IN_EP,  PCD_SNG_BUF, USB_PMA_BASE + 4 * USB_FS_MAX_PACKET_SIZE);
+	HAL_PCDEx_PMAConfig(SELF.p_pcd, CDC_OUT_EP, PCD_SNG_BUF, USB_PMA_BASE + 5 * USB_FS_MAX_PACKET_SIZE);
 
-	status = USBD_RegisterClass(self.p_usbd, CLASS_IDX, &cdc_class_def);
+	status = USBD_RegisterClass(SELF.p_usbd, CLASS_IDX, &cdc_class_def);
 	HAL_ERR_CHECK(status, EUSB_CDC_REG_CLASS);
 
-	self.rx_queue_handle = xQueueCreateStatic(QUEUE_LENGTH,
+	SELF.rx_queue_handle = xQueueCreateStatic(QUEUE_LENGTH,
 		QUEUE_ITEM_SIZE,
-		self.rx_queue_storage,
-		&self.rx_queue);
+		SELF.rx_queue_storage,
+		&SELF.rx_queue);
 
-	self.tx_done_semaphore = xSemaphoreCreateBinaryStatic(&self.tx_done_semaphore_buffer);
-	xSemaphoreGive(self.tx_done_semaphore);
+	SELF.tx_done_semaphore = xSemaphoreCreateBinaryStatic(&SELF.tx_done_semaphore_buffer);
+	xSemaphoreGive(SELF.tx_done_semaphore);
 
-	self.initialized = true;
+	SELF.initialized = true;
 
 	return ERR_OK;
 }
