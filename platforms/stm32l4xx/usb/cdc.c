@@ -1,10 +1,10 @@
 #include <FreeRTOS.h>
 #include <semphr.h>
-#include <queue.h>
 #include <stdbool.h>
 #include <string.h>
 
 #include "hal_errors.h"
+#include "platform/platform.h"
 #include "platform/uart.h"
 #include "platform/usb/cdc.h"
 #include "platform/usb/usb.h"
@@ -12,12 +12,10 @@
 #include "stm32l4xx_hal.h"
 #include "cdc_internal.h"
 
-#define MODULE_NAME				usb_cdc
+#define MODULE_NAME		usb_cdc
 #include "macros.h"
 
 #define CLASS_IDX		1
-#define QUEUE_LENGTH	10
-#define QUEUE_ITEM_SIZE	sizeof(struct usb_rx_queue_item)
 
 static struct {
 	bool initialized;
@@ -28,9 +26,8 @@ static struct {
 	uint8_t ctrl_op_code;
 	uint8_t ctrl_len;
 	uint8_t alt_interface;
-	StaticQueue_t rx_queue;
-	QueueHandle_t rx_queue_handle;
-	uint8_t rx_queue_storage[QUEUE_LENGTH * QUEUE_ITEM_SIZE];
+	SemaphoreHandle_t rx_done_semaphore;
+	StaticSemaphore_t rx_done_semaphore_buffer;
 	SemaphoreHandle_t tx_done_semaphore;
 	StaticSemaphore_t tx_done_semaphore_buffer;
 } SELF;
@@ -196,9 +193,8 @@ static uint8_t cdc_data_out(USBD_HandleTypeDef *p_dev, uint8_t epnum)
 		return HAL_OK;
 
 	SELF.rx_buf.len = HAL_PCD_EP_GetRxCount(SELF.p_pcd, epnum);
-	status = HAL_PCD_EP_Receive(SELF.p_pcd, CDC_OUT_EP, SELF.rx_buf.data, USB_FS_MAX_PACKET_SIZE);
- 
-	xQueueSendFromISR(SELF.rx_queue_handle, &SELF.rx_buf, &xHigherPriorityTaskWoken);
+	if (xSemaphoreGiveFromISR(SELF.rx_done_semaphore, &xHigherPriorityTaskWoken) != pdTRUE)
+		platform_force_hardfault();
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 
 	return status;
@@ -224,8 +220,15 @@ err_t usb_cdc_rx(struct usb_rx_queue_item *p_rx_queue_item, uint32_t timeout_tic
 	if (!p_rx_queue_item)
 		return EUSB_CDC_INVALID_ARG;
 
-	if (xQueueReceive(SELF.rx_queue_handle, p_rx_queue_item, timeout_ticks) == pdFALSE)
+	if (xSemaphoreTake(SELF.rx_done_semaphore, portMAX_DELAY) != pdTRUE)
 		return EUSB_CDC_RX_TIMEOUT;
+
+	*p_rx_queue_item = SELF.rx_buf;
+
+	/* The reason to this backwards logic is that FreeRTOS seem to require a queue to be
+	 * received when posting to it from an ISR, otherwise we get errQUEUE_FULL.
+	 */
+	HAL_PCD_EP_Receive(SELF.p_pcd, CDC_OUT_EP, SELF.rx_buf.data, USB_FS_MAX_PACKET_SIZE);
 
 	return ERR_OK;
 }
@@ -266,10 +269,7 @@ err_t usb_cdc_init(const struct cdc_init_data *p_data)
 	status = USBD_RegisterClass(SELF.p_usbd, CLASS_IDX, &cdc_class_def);
 	HAL_ERR_CHECK(status, EUSB_CDC_REG_CLASS);
 
-	SELF.rx_queue_handle = xQueueCreateStatic(QUEUE_LENGTH,
-		QUEUE_ITEM_SIZE,
-		SELF.rx_queue_storage,
-		&SELF.rx_queue);
+	SELF.rx_done_semaphore = xSemaphoreCreateBinaryStatic(&SELF.rx_done_semaphore_buffer);
 
 	SELF.tx_done_semaphore = xSemaphoreCreateBinaryStatic(&SELF.tx_done_semaphore_buffer);
 	xSemaphoreGive(SELF.tx_done_semaphore);
