@@ -68,7 +68,8 @@ static void rx_task(void *p_arg)
 		case EUART_DISABLED:
 			break;
 		default:
-			while (1);
+			/* TODO: Figure out why we sometimes get BUSY even though things work out fine */
+			break;
 		}
 	}
 }
