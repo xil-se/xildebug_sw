@@ -203,3 +203,9 @@ void platform_reset(void)
 {
 	HAL_NVIC_SystemReset();
 }
+
+void platform_force_hardfault(void)
+{
+	/* https://github.com/torvalds/linux/blob/master/arch/arm/include/asm/bug.h#L15 */
+	__ASM volatile(".short 0xde02\n");
+}

@@ -7,4 +7,5 @@
 void platform_delay_us(uint32_t delay_us);
 void platform_reset(void);
 void platform_reboot_to_dfu(void);
+void platform_force_hardfault(void);
 err_t platform_init(void);
