@@ -6,6 +6,7 @@
 #include "drivers/max14662.h"
 #include "hal_errors.h"
 #include "platform/gpio.h"
+#include "platform/platform.h"
 #include "platform/uart.h"
 #include "platform/usb/cdc.h"
 #include "stm32f0xx_hal.h"
@@ -140,6 +141,11 @@ void HAL_UART_AbortReceiveCpltCallback(UART_HandleTypeDef *p_uart)
 	HAL_UART_Receive_DMA(&SELF.uart_handle, (uint8_t*) SELF.rx_item.data, USB_FS_MAX_PACKET_SIZE);
 }
 
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+	platform_force_hardfault();
+}
+
 void USART1_IRQHandler(void)
 {
 	HAL_UART_IRQHandler(&SELF.uart_handle);
@@ -174,6 +180,8 @@ err_t uart_tx(const uint8_t *p_buf, uint32_t size, uint32_t timeout_ticks, bool 
 	status = HAL_UART_Transmit_DMA(&SELF.uart_handle, (uint8_t*) p_buf, size);
 	if (status != HAL_OK) {
 		r = HAL_ERROR_SET(status, EUART_TX);
+		/* Give the semaphore in case there are errors, as the callback will not be called */
+		xSemaphoreGive(SELF.tx_done_semaphore);
 		goto out;
 	}
 
