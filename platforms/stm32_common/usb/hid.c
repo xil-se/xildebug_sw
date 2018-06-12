@@ -1,10 +1,10 @@
 #include <FreeRTOS.h>
 #include <semphr.h>
-#include <queue.h>
 #include <stdbool.h>
 
 #include "hal_errors.h"
 #include "hid_internal.h"
+#include "platform/platform.h"
 #include "platform/usb/hid.h"
 #include "platform/usb/usb.h"
 #include "stm32_hal.h"
@@ -15,8 +15,6 @@
 #include "macros.h"
 
 #define CLASS_IDX		0
-#define QUEUE_LENGTH	10
-#define QUEUE_ITEM_SIZE	sizeof(struct usb_rx_queue_item)
 
 static struct {
 	bool initialized;
@@ -27,9 +25,8 @@ static struct {
 	uint32_t protocol;
 	uint32_t idle_state;
 	uint32_t alt_interface;
-	StaticQueue_t rx_queue;
-	QueueHandle_t rx_queue_handle;
-	uint8_t rx_queue_storage[QUEUE_LENGTH * QUEUE_ITEM_SIZE];
+	SemaphoreHandle_t rx_done_semaphore;
+	StaticSemaphore_t rx_done_semaphore_buffer;
 	SemaphoreHandle_t tx_done_semaphore;
 	StaticSemaphore_t tx_done_semaphore_buffer;
 } SELF;
@@ -113,7 +110,7 @@ static uint8_t hid_setup(USBD_HandleTypeDef *p_dev, USBD_SetupReqTypedef *p_req)
 	uint16_t len = 0;
 
 	switch (p_req->bmRequest.type) {
-	case USB_REQ_TYPE_CLASS :
+	case USB_REQ_TYPE_CLASS:
 		if ((p_req->bmRequest.recipient == USB_REQ_RECIPIENT_INTERFACE) &&
 				(p_req->wIndex == USB_HID_INTERFACE_NO)) {
 			switch (p_req->bRequest) {
@@ -204,9 +201,8 @@ static uint8_t hid_data_out(USBD_HandleTypeDef *p_dev, uint8_t epnum)
 		return HAL_OK;
 
 	SELF.rx_buf.len = HAL_PCD_EP_GetRxCount(SELF.p_pcd, epnum);
-	status = HAL_PCD_EP_Receive(SELF.p_pcd, HID_OUT_EP, SELF.rx_buf.data, USB_FS_MAX_PACKET_SIZE);
-
-	xQueueSendFromISR(SELF.rx_queue_handle, &SELF.rx_buf, &xHigherPriorityTaskWoken);
+	if (xSemaphoreGiveFromISR(SELF.rx_done_semaphore, &xHigherPriorityTaskWoken) != pdTRUE)
+		platform_force_hardfault();
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 
 	return status;
@@ -220,8 +216,15 @@ err_t usb_hid_recv(struct usb_rx_queue_item *p_rx_queue_item, uint32_t timeout_t
 	if (!p_rx_queue_item)
 		return EUSB_HID_INVALID_ARG;
 
-	if (xQueueReceive(SELF.rx_queue_handle, p_rx_queue_item, timeout_ticks) == pdFALSE)
+	if (xSemaphoreTake(SELF.rx_done_semaphore, portMAX_DELAY) != pdTRUE)
 		return EUSB_HID_RECV_TIMEOUT;
+
+	*p_rx_queue_item = SELF.rx_buf;
+
+	/* The reason to this backwards logic is that FreeRTOS seem to require a queue to be
+	 * received when posting to it from an ISR, otherwise we get errQUEUE_FULL.
+	 */
+	HAL_PCD_EP_Receive(SELF.p_pcd, HID_OUT_EP, SELF.rx_buf.data, USB_FS_MAX_PACKET_SIZE);
 
 	return ERR_OK;
 }
@@ -260,10 +263,7 @@ err_t usb_hid_init(const struct hid_init_data *p_data)
 	status = USBD_RegisterClass(SELF.p_usbd, CLASS_IDX, &hid_class_def);
 	HAL_ERR_CHECK(status, EUSB_HID_REG_CLASS);
 
-	SELF.rx_queue_handle = xQueueCreateStatic(QUEUE_LENGTH,
-		QUEUE_ITEM_SIZE,
-		SELF.rx_queue_storage,
-		&SELF.rx_queue);
+	SELF.rx_done_semaphore = xSemaphoreCreateBinaryStatic(&SELF.rx_done_semaphore_buffer);
 
 	SELF.tx_done_semaphore = xSemaphoreCreateBinaryStatic(&SELF.tx_done_semaphore_buffer);
 	xSemaphoreGive(SELF.tx_done_semaphore);
