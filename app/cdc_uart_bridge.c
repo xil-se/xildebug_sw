@@ -26,7 +26,7 @@
 #define LED_TIMEOUT_MS			25
 #define UART_RX_TIMEOUT_MS		50
 
-/* Fun test string: 
+/* Fun test string:
 </////////////////////////////////////////////////////////////>[##################]
 <2345678901234567890123456789012345678901234567890123456789012>[ABCDEFGHIJKLMNOPQR]
 */
@@ -80,7 +80,7 @@ static void tx_task(void *p_arg)
 	struct usb_rx_queue_item item;
 
 	for (;;) {
-		/* uart_start_rx starts a continuous DMA transfer of 64 bytes that sends its data to our 
+		/* uart_start_rx starts a continuous DMA transfer of 64 bytes that sends its data to our
 		 * queue that we receive here. In order to get shorter messages in near realtime we need
 		 * a timeout and flush the received bytes so far. */
 		if (xQueueReceive(SELF.tx_queue_handle, &item, pdMS_TO_TICKS(UART_RX_TIMEOUT_MS)) == pdFALSE) {

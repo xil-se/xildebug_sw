@@ -33,22 +33,22 @@
 #define DUT_UART_RX_GPIO_Port ((uint32_t) GPIOB)
 
 /* These pins are valid but not pulled out on thumbinator */
-#define DUT_VDD_IN_Pin GPIO_PIN_1
+#define DUT_VDD_IN_Pin GPIO_PIN_2
 #define DUT_VDD_IN_GPIO_Port ((uint32_t) GPIOA)
-#define DUT_VDD_OUT_Pin GPIO_PIN_2
+#define DUT_VDD_OUT_Pin GPIO_PIN_3
 #define DUT_VDD_OUT_GPIO_Port ((uint32_t) GPIOA)
 
-#define SHUNT1_EN_Pin GPIO_PIN_3
+#define SHUNT1_EN_Pin GPIO_PIN_4
 #define SHUNT1_EN_GPIO_Port ((uint32_t) GPIOA)
 
-#define SHUNT2_EN_Pin GPIO_PIN_4
+#define SHUNT2_EN_Pin GPIO_PIN_5
 #define SHUNT2_EN_GPIO_Port ((uint32_t) GPIOA)
 
-#define DUT_VDD_EN_Pin GPIO_PIN_5
+#define DUT_VDD_EN_Pin GPIO_PIN_6
 #define DUT_VDD_EN_GPIO_Port ((uint32_t) GPIOA)
 
-#define LED_RGB_B_Pin GPIO_PIN_6
+#define LED_RGB_B_Pin GPIO_PIN_7
 #define LED_RGB_B_GPIO_Port ((uint32_t) GPIOA)
 
-#define LED_RGB_G_Pin GPIO_PIN_7
+#define LED_RGB_G_Pin GPIO_PIN_8
 #define LED_RGB_G_GPIO_Port ((uint32_t) GPIOA)

@@ -7,10 +7,11 @@
 #include "platform/platform.h"
 
 #define TIMEOUT_S 60
-
+#include "drivers/led.h"
+#include "platform/gpio.h"
 void HardFault_Handler(void)
 {
-	vTaskEndScheduler();
+//	vTaskEndScheduler();
 
 	/* Wait for a debugger to attach */
 	for (uint32_t i = 0; i < TIMEOUT_S * 10; i++) {

@@ -28,7 +28,7 @@ static StaticTask_t main_task_tcb;
 
 int _write(int fd, const char *msg, int len)
 {
-//	uart_tx((const uint8_t*)msg, len, 100, true);
+	usb_cdc_tx(msg, len);
 	return len;
 }
 
@@ -43,17 +43,17 @@ void main_task(void *p_arg)
 	err_t r;
 
 #if (FEAT_POWER_PROFILER == 1)
-	r = i2c_init();
-	ERR_CHECK(r);
+//	r = i2c_init();
+//	ERR_CHECK(r);
 
 	r = adc_init();
 	ERR_CHECK(r);
 
 	r = max14662_init(MAX14662_AD_0_0);
-	ERR_CHECK(r);
+	// ERR_CHECK(r);
 
 	r = mcp4018t_init();
-	ERR_CHECK(r);
+	// ERR_CHECK(r);
 
 	r = power_init();
 	ERR_CHECK(r);
@@ -65,12 +65,11 @@ void main_task(void *p_arg)
 	r = usb_init();
 	ERR_CHECK(r);
 
-	r = cdc_uart_bridge_init();
-	ERR_CHECK(r);
-
 	while (1) {
 		i++;
 		led_rgb_set(i % 8);
+
+		// printf("%i\n", i);
 
 		vTaskDelay(pdMS_TO_TICKS(250));
 	}

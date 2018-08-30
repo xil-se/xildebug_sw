@@ -28,7 +28,8 @@ err_t mcp4018t_set_value(uint8_t val)
 	if (SELF.value == val)
 		return ERR_OK;
 
-	return i2c_master_tx(MCP4018T_ADDRESS << 1, &val, sizeof(val), I2C_TIMEOUT_MS);
+	return ERR_OK;
+//	return i2c_master_tx(MCP4018T_ADDRESS << 1, &val, sizeof(val), I2C_TIMEOUT_MS);
 }
 
 err_t mcp4018t_get_value(uint8_t *p_val)
@@ -39,7 +40,8 @@ err_t mcp4018t_get_value(uint8_t *p_val)
 	if (!p_val)
 		return EMCP4018T_INVALID_ARG;
 
-	return i2c_master_rx(MCP4018T_ADDRESS << 1, p_val, sizeof(*p_val), I2C_TIMEOUT_MS);
+	return ERR_OK;
+	// return i2c_master_rx(MCP4018T_ADDRESS << 1, p_val, sizeof(*p_val), I2C_TIMEOUT_MS);
 }
 
 err_t mcp4018t_init(void)

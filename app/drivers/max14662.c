@@ -69,8 +69,8 @@ err_t max14662_set_value(enum MAX14662_address address, uint8_t val)
 		return ERR_OK;
 
 	i2c_address = resolve_address(address);
-	r = i2c_master_tx(i2c_address << 1, data, sizeof(data), I2C_TIMEOUT_MS);
-	ERR_CHECK(r);
+//	r = i2c_master_tx(i2c_address << 1, data, sizeof(data), I2C_TIMEOUT_MS);
+//	ERR_CHECK(r);
 
 	SELF.state[address] = val;
 
@@ -93,7 +93,7 @@ err_t max14662_set_bit(enum MAX14662_address address, enum MAX14662_bit bit, boo
 		new_value = SELF.state[address] | (1 << bit);
 	else
 		new_value = SELF.state[address] & (~(1 << bit));
-	
+
 	return max14662_set_value(address, new_value);
 }
 
@@ -109,7 +109,8 @@ err_t max14662_get_value(enum MAX14662_address address, uint8_t *p_val)
 	if (!SELF.initialized)
 		return EMAX14662_NO_INIT;
 
-	return i2c_master_rx(i2c_address << 1, p_val, sizeof(*p_val), I2C_TIMEOUT_MS);
+	// return i2c_master_rx(i2c_address << 1, p_val, sizeof(*p_val), I2C_TIMEOUT_MS);
+	return ERR_OK;
 }
 
 err_t max14662_init(enum MAX14662_address address)

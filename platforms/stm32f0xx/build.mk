@@ -1,5 +1,6 @@
 
 PLATFORM_SRCS := \
+	platforms/$(PLATFORM)/adc.c \
 	platforms/$(PLATFORM)/gpio.c \
 	platforms/$(PLATFORM)/startup_stm32f072xb.s \
 	platforms/$(PLATFORM)/stm32f0_hal.c \

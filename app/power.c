@@ -10,7 +10,7 @@
 #define MODULE_NAME				power
 #include "macros.h"
 
-#define POWER_TASK_STACK_SIZE	128
+#define POWER_TASK_STACK_SIZE	1024
 #define POWER_TASK_NAME			"Power"
 #define POWER_TASK_PRIORITY		1
 
@@ -56,7 +56,7 @@ static float calib_shunt_11 = 512.2f;
  *
  * I.e. Current always flows through the 510R, but the total resistance may be lowered
  * by toggling the shunt resistor switches. The ts5a3167 switches have inverted logic.
- * 
+ *
  * S1 S2      R   Measured resistance
  *  0  0 510.00   512.2
  *  0  1   1.79   4.1
@@ -84,6 +84,7 @@ static void power_task(void *p_arg)
 		xQueueReceive(SELF.queue_handle, adc_values, portMAX_DELAY);
 
 		/* TODO: Do stuff with the values */
+		printf("%d\t%d\t%d\r\n", adc_values[0], adc_values[1], adc_values[2]);
 	}
 }
 
@@ -116,6 +117,7 @@ err_t power_dut_get_enabled(bool *p_enabled)
 
 err_t power_dut_ldo_set(uint32_t millivolt)
 {
+	return ERR_OK;
 	err_t r;
 
 	if (!SELF.initialized)

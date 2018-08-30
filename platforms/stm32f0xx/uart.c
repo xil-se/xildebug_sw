@@ -52,7 +52,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef *p_handle)
 		gpio_config.Speed = GPIO_SPEED_FREQ_LOW;
 		gpio_config.Alternate = GPIO_AF0_USART1;
 		HAL_GPIO_Init(GPIOB, &gpio_config);
-		
+
 		SELF.hdma_usart1_tx.Instance = DMA1_Channel2;
 		SELF.hdma_usart1_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
 		SELF.hdma_usart1_tx.Init.PeriphInc = DMA_PINC_DISABLE;
@@ -133,7 +133,7 @@ void HAL_UART_AbortReceiveCpltCallback(UART_HandleTypeDef *p_uart)
 
 	SELF.rx_item.len = USB_FS_MAX_PACKET_SIZE - LL_DMA_GetDataLength(DMA1, LL_DMA_CHANNEL_3);
 
-	if (SELF.rx_item.len) {
+	if (SELF.rx_item.len && SELF.rx_queue_handle) {
 		xQueueSendFromISR(SELF.rx_queue_handle, &SELF.rx_item, &xHigherPriorityTaskWoken);
 		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 	}
@@ -293,7 +293,7 @@ err_t uart_config_set(const struct uart_line_coding * const p_config)
 	UART_InitTypeDef hal_config;
 	HAL_StatusTypeDef status;
 	err_t r;
-	
+
 	if (!SELF.initialized)
 		return EUART_NO_INIT;
 
@@ -316,7 +316,7 @@ err_t uart_enable(void)
 
 	if (!SELF.initialized)
 		return EUART_NO_INIT;
-	
+
 	if (SELF.enabled)
 		return ERR_OK;
 

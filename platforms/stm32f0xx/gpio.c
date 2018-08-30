@@ -28,10 +28,11 @@ void gpio_init(void)
 	gpio_config.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOA, &gpio_config);
 
-	gpio_config.Pin = GPIO0_Pin | GPIO1_Pin | GPIO2_Pin | GPIO3_Pin | DUT_UART_TX_LED_Pin | DUT_UART_RX_LED_Pin | 
+	gpio_config.Pin = GPIO0_Pin | GPIO1_Pin | GPIO2_Pin | GPIO3_Pin | DUT_UART_TX_LED_Pin | DUT_UART_RX_LED_Pin |
 					DUT_SWD_LED_Pin | LED_RGB_R_Pin | DUT_SWCLK_Pin | DUT_SWDIO_Pin | DUT_UART_TX_Pin | DUT_UART_RX_Pin;
 	gpio_config.Mode = GPIO_MODE_OUTPUT_PP;
 	gpio_config.Pull = GPIO_NOPULL;
 	gpio_config.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOB, &gpio_config);
+
 }
