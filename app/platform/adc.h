@@ -5,6 +5,7 @@
 #define EADC_HAL_INIT			(EADC_BASE + 0)
 #define EADC_HAL_CONFIG_CHANNEL	(EADC_BASE + 1)
 #define EADC_NO_INIT			(EADC_BASE + 2)
+#define EADC_HAL_CONV           (EADC_BASE + 3)
 
 #define NUM_OF_ADC_CHANNELS		3
 

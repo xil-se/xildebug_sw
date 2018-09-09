@@ -29,6 +29,7 @@ static StaticTask_t main_task_tcb;
 int _write(int fd, const char *msg, int len)
 {
 //	uart_tx((const uint8_t*)msg, len, 100, true);
+	usb_cdc_tx(msg, len);
 	return len;
 }
 

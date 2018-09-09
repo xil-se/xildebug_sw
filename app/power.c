@@ -83,14 +83,14 @@ static void power_task(void *p_arg)
 	for (;;) {
 		xQueueReceive(SELF.queue_handle, adc_values, portMAX_DELAY);
 
-#if 0
-		uint32_t vref;
-		printf("CAL val: %ld\r\n", (uint32_t)(*VREFINT_CAL_ADDR));
-		vref = __LL_ADC_CALC_VREFANALOG_VOLTAGE(item.chan3, LL_ADC_RESOLUTION_12B);
+        printf("values[0] = %d\r\n", adc_values[0]);
+        printf("values[1] = %d\r\n", adc_values[1]);
+        printf("values[2] = %d\r\n", adc_values[2]);
+		/*uint32_t vref;
+		vref = __LL_ADC_CALC_VREFANALOG_VOLTAGE(adc_values[0], LL_ADC_RESOLUTION_12B);
 		printf("VREFINT: %lu\r\n", vref);
-		printf("rank1: %lu\r\n", __LL_ADC_CALC_DATA_TO_VOLTAGE(vref, item.chan1, LL_ADC_RESOLUTION_12B))
-		printf("rank2: %lu\r\n", __LL_ADC_CALC_DATA_TO_VOLTAGE(vref, item.chan2, LL_ADC_RESOLUTION_12B));
-#endif
+		printf("Channel 5: %lu\r\n", __LL_ADC_CALC_DATA_TO_VOLTAGE(vref, adc_values[1], LL_ADC_RESOLUTION_12B));
+		printf("Channel 6: %lu\r\n", __LL_ADC_CALC_DATA_TO_VOLTAGE(vref, adc_values[2], LL_ADC_RESOLUTION_12B));*/
 	}
 }
 
@@ -195,7 +195,8 @@ err_t power_init(void)
 	/* TODO: Might want to keep this in persistent ram and/or flash so we can
 	 * resume with the previous values after a cold boot.
 	 */
-	power_dut_ldo_set(SELF.calib_min_mv);
+	power_dut_ldo_set(3300);
+	power_dut_set_enabled(true);
 
 	return ERR_OK;
 }
