@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 struct persistent {
-	bool reboot_to_bootloader;
+	uint32_t reboot_to_bootloader;
 };
 
 extern struct persistent persistent_data;

@@ -7,6 +7,8 @@
 
 #define SYSMEM_ADDRESS 0x1FFFC800
 
+#define REBOOT_TO_BOOTLOADER_MAGIC 0x1337BEEF
+
 static TIM_HandleTypeDef tim_handle;
 extern void xPortSysTickHandler(void);
 
@@ -176,8 +178,8 @@ err_t platform_init(void)
 {
 	HAL_StatusTypeDef status;
 
-	if (persistent_data.reboot_to_bootloader) {
-		persistent_data.reboot_to_bootloader = false;
+	if (persistent_data.reboot_to_bootloader == REBOOT_TO_BOOTLOADER_MAGIC) {
+		persistent_data.reboot_to_bootloader = 0;
 		jump_to_bootloader();
 	}
 
