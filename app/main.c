@@ -70,9 +70,12 @@ void main_task(void *p_arg)
 
 	while (1) {
 		i++;
-		led_rgb_set(i % 8);
 
-		vTaskDelay(pdMS_TO_TICKS(250));
+		led_rgb_set(1 << (i % 3));
+		vTaskDelay(pdMS_TO_TICKS(5));
+
+		led_rgb_set(0);
+		vTaskDelay(pdMS_TO_TICKS(500));
 	}
 }
 
